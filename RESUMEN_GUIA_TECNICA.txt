@@ -1,0 +1,201 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║        ✅ GUÍA TÉCNICA CREADA: GUIA_TECNICA_FUNCIONAMIENTO_APLICACION.md  ║
+║                                                                            ║
+║              Explicación completa de cómo funciona tu programa             ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+📚 CONTENIDO DEL ARCHIVO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ 1. VISIÓN GENERAL
+   • Qué es la aplicación
+   • Qué hace
+   • Cómo funciona en general
+
+✅ 2. FLUJO DE DATOS
+   • Entrada de datos (CSV)
+   • Procesamiento
+   • Análisis
+   • Pronóstico
+   • Visualización
+
+✅ 3. PROCESAMIENTO DE DATOS
+   • Carga de datos
+   • Normalización
+   • Agrupación semanal
+   • Validaciones
+
+✅ 4. ALGORITMOS DE PRONÓSTICO
+   • Regresión Lineal
+   • Análisis Estacional
+   • Intervalos de Confianza
+
+✅ 5. FÓRMULAS MATEMÁTICAS (EXPLICADAS CON EJEMPLOS)
+   
+   📐 REGRESIÓN LINEAL:
+      y = mx + b
+      
+      m = Σ[(xi - x̄)(yi - ȳ)] / Σ[(xi - x̄)²]
+      b = ȳ - m × x̄
+      
+      Ejemplo práctico con números reales
+
+   📊 ANÁLISIS ESTACIONAL:
+      factor_estacional[i] = (valor[i] - tendencia[i]) / tendencia[i]
+      pronóstico_final = tendencia × (1 + factor_estacional)
+      
+      Ejemplo: Navidad con 48% más gasto
+
+   📈 INTERVALOS DE CONFIANZA (95%):
+      σ = √[Σ(residual²) / n]
+      Límite Superior = Pronóstico + 1.96 × σ
+      Límite Inferior = max(0, Pronóstico - 1.96 × σ)
+      
+      ¿Por qué 1.96? Cubre 95% de los datos
+
+✅ 6. RECURSOS Y LIBRERÍAS
+   
+   Frontend:
+   • Chart.js 3.9.1 (Gráficos interactivos)
+   • DataTables 1.13.6 (Tablas con paginación)
+   • jQuery 3.6.0 (Dependencia de DataTables)
+   • PapaParse 5.4.1 (Parseo de CSV)
+   • SweetAlert2 11 (Alertas elegantes)
+   
+   Backend:
+   • NumPy (Operaciones numéricas)
+   • Pandas (Manipulación de datos)
+   • Scikit-learn (Regresión lineal)
+   • Flask (API REST)
+
+✅ 7. EJEMPLO PRÁCTICO COMPLETO
+   • Datos de entrada
+   • Cálculo de tendencia
+   • Cálculo de estacionalidad
+   • Cálculo de residuales
+   • Generación de pronóstico
+   • Resultado final
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 CONCEPTOS CLAVE EXPLICADOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tendencia
+  └─ Dirección general de los datos (arriba, abajo, plano)
+
+Estacionalidad
+  └─ Patrones que se repiten en períodos específicos
+
+Residual
+  └─ Diferencia entre valor real y predicho
+
+Desviación Estándar (σ)
+  └─ Medida de dispersión de los datos
+
+Intervalo de Confianza
+  └─ Rango donde probablemente esté el valor real
+
+Regresión Lineal
+  └─ Técnica para encontrar la línea que mejor ajusta los datos
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 FLUJO COMPLETO DE LA APLICACIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. ENTRADA
+   CSV con transacciones (cliente_id, fecha, monto, categoría)
+   ↓
+2. PROCESAMIENTO
+   Validación → Normalización → Agrupación semanal
+   ↓
+3. ANÁLISIS
+   Regresión Lineal → Estacionalidad → Residuales
+   ↓
+4. PRONÓSTICO
+   Tendencia + Estacionalidad → Intervalos de Confianza
+   ↓
+5. VISUALIZACIÓN
+   Gráficos interactivos + Tabla de datos
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ RESUMEN EJECUTIVO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Algoritmo:
+  Regresión Lineal + Estacionalidad + Intervalos de Confianza (95%)
+
+Datos de Entrada:
+  • Transacciones históricas (cliente_id, fecha, monto, categoría)
+  • Agrupadas por semana
+  • Período: 3 años (1095 días)
+
+Procesamiento:
+  1. Validación de datos
+  2. Normalización de categorías
+  3. Agrupación semanal
+  4. Cálculo de tendencia (regresión lineal)
+  5. Detección de estacionalidad
+  6. Cálculo de residuales
+
+Pronóstico:
+  • Combina tendencia + estacionalidad
+  • Genera predicciones para 14 semanas (configurable)
+  • Calcula intervalos de confianza al 95%
+
+Precisión:
+  Depende de la cantidad y calidad de datos históricos
+
+Confianza:
+  95% (1.96 × desviación estándar)
+
+Visualización:
+  • Gráficos de series temporales
+  • Gráficos de pronóstico con intervalos
+  • Comparación de categorías
+  • Tabla de datos detallada
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📖 CÓMO USAR ESTE ARCHIVO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Abre: GUIA_TECNICA_FUNCIONAMIENTO_APLICACION.md
+
+2. Lee las secciones en orden:
+   • Visión General (entender qué hace)
+   • Flujo de Datos (entender cómo funciona)
+   • Procesamiento de Datos (entender cómo se preparan los datos)
+   • Algoritmos (entender qué técnicas se usan)
+   • Fórmulas Matemáticas (entender la matemática detrás)
+   • Recursos (entender qué librerías se usan)
+   • Ejemplo Práctico (ver un ejemplo paso a paso)
+
+3. Usa como referencia para:
+   • Explicar tu proyecto
+   • Entender cómo funciona
+   • Documentar tu código
+   • Presentar en clase o trabajo
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║  ✅ ARCHIVO CREADO EXITOSAMENTE                                           ║
+║                                                                            ║
+║  Ubicación: GUIA_TECNICA_FUNCIONAMIENTO_APLICACION.md                    ║
+║                                                                            ║
+║  Este archivo contiene:                                                   ║
+║  ✅ Explicación completa de cómo funciona la aplicación                   ║
+║  ✅ Todos los algoritmos utilizados                                       ║
+║  ✅ Todas las fórmulas matemáticas con ejemplos                           ║
+║  ✅ Recursos y librerías utilizadas                                       ║
+║  ✅ Ejemplo práctico paso a paso                                          ║
+║  ✅ Conceptos clave explicados                                            ║
+║                                                                            ║
+║  ¡Perfecto para entender tu programa completamente! 📚                    ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+

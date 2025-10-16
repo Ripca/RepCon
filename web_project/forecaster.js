@@ -1,54 +1,111 @@
 /**
- * Módulo de Pronóstico - Genera predicciones de series temporales
+ * Módulo de Pronóstico - Genera predicciones de series temporales usando ARIMA
  */
 
 class Forecaster {
     constructor() {
         this.forecasts = {};
+        this.arimaModels = {};
     }
-    
+
     /**
-     * Genera pronóstico para una categoría
+     * Genera pronóstico para una categoría usando ARIMA
      */
     forecast(category, weeks = 14) {
         const data = dataProcessor.getWeeklyData(category);
         if (!data) return null;
-        
+
         const values = data.values;
         const dates = data.dates;
-        
-        // Usar regresión lineal simple + componente estacional
-        const trend = this._calculateTrend(values);
-        const seasonal = this._calculateSeasonal(values);
-        
+
+        try {
+            // Intentar usar ARIMA
+            return this._forecastARIMA(category, values, dates, weeks);
+        } catch (e) {
+            console.warn(`ARIMA falló para ${category}: ${e.message}. Usando regresión lineal.`);
+            // Fallback a regresión lineal
+            return this._forecastLinear(category, values, dates, weeks);
+        }
+    }
+
+    /**
+     * Genera pronóstico usando ARIMA
+     */
+    _forecastARIMA(category, values, dates, weeks) {
+        // Encontrar parámetros ARIMA óptimos
+        const params = findOptimalARIMAParams(values, 2, 1, 2);
+
+        // Crear y entrenar modelo ARIMA
+        const model = new ARIMAModel(values, params);
+        model.fit();
+
         // Generar pronóstico
-        const forecastValues = [];
+        const forecastValues = model.forecast(weeks);
+
+        // Calcular intervalos de confianza
+        const confidence = model.getConfidenceIntervals(forecastValues);
+
+        // Generar fechas futuras
         const forecastDates = [];
-        
         const lastDate = new Date(dates[dates.length - 1]);
-        
+
         for (let i = 1; i <= weeks; i++) {
             const futureDate = new Date(lastDate);
             futureDate.setDate(futureDate.getDate() + (i * 7));
-            
-            const trendValue = trend.slope * (values.length + i) + trend.intercept;
-            const seasonalValue = seasonal[i % seasonal.length];
-            const forecastValue = Math.max(0, trendValue * (1 + seasonalValue));
-            
-            forecastValues.push(forecastValue);
             forecastDates.push(futureDate.toISOString().split('T')[0]);
         }
-        
-        // Calcular intervalos de confianza
-        const confidence = this._calculateConfidence(values, forecastValues);
-        
+
+        // Almacenar modelo
+        this.arimaModels[category] = { model, params };
+
         return {
             category: category,
             historicalDates: dates,
             historicalValues: values,
             forecastDates: forecastDates,
             forecastValues: forecastValues,
-            confidence: confidence
+            confidence: confidence,
+            method: 'ARIMA',
+            arimaParams: params
+        };
+    }
+
+    /**
+     * Fallback: Genera pronóstico usando regresión lineal
+     */
+    _forecastLinear(category, values, dates, weeks) {
+        const trend = this._calculateTrend(values);
+        const seasonal = this._calculateSeasonal(values);
+
+        // Generar pronóstico
+        const forecastValues = [];
+        const forecastDates = [];
+
+        const lastDate = new Date(dates[dates.length - 1]);
+
+        for (let i = 1; i <= weeks; i++) {
+            const futureDate = new Date(lastDate);
+            futureDate.setDate(futureDate.getDate() + (i * 7));
+
+            const trendValue = trend.slope * (values.length + i) + trend.intercept;
+            const seasonalValue = seasonal[i % seasonal.length];
+            const forecastValue = Math.max(0, trendValue * (1 + seasonalValue));
+
+            forecastValues.push(forecastValue);
+            forecastDates.push(futureDate.toISOString().split('T')[0]);
+        }
+
+        // Calcular intervalos de confianza
+        const confidence = this._calculateConfidence(values, forecastValues);
+
+        return {
+            category: category,
+            historicalDates: dates,
+            historicalValues: values,
+            forecastDates: forecastDates,
+            forecastValues: forecastValues,
+            confidence: confidence,
+            method: 'Linear Regression'
         };
     }
     

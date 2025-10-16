@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forecasting de Categorías de Consumo</title>
+    <title>Forecasting Analytics - Sistema de Predicción</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -13,117 +14,331 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-    <div class="container">
-        <!-- HEADER FIJO CON ESTADÍSTICAS -->
-        <header class="fixed-header">
-            <div class="header-content">
-                <h1>📊 Forecasting</h1>
-            </div>
-
-            <!-- ESTADÍSTICAS FIJAS -->
-            <div class="stats-bar">
-                <div class="stat-item">
-                    <span class="stat-label">Transacciones</span>
-                    <span class="stat-value" id="statTransactions">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Monto Total (Q)</span>
-                    <span class="stat-value" id="statAmount">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Categorías</span>
-                    <span class="stat-value" id="statCategories">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Período</span>
-                    <span class="stat-value" id="statPeriod">-</span>
+    <div class="app-container">
+        <!-- SIDEBAR NAVEGACIÓN -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Forecasting</span>
                 </div>
             </div>
 
-            <!-- CONTROLES COMPACTOS -->
-            <div class="compact-controls">
-                <div class="file-input-wrapper">
-                    <input type="file" id="csvFile" accept=".csv" onchange="handleFileUpload(event)">
-                    <label for="csvFile">📁 CSV</label>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" onclick="switchPage('dashboard', event)">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchPage('analysis', event)">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Análisis</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchPage('forecast', event)">
+                    <i class="fas fa-crystal-ball"></i>
+                    <span>Pronósticos</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchPage('data', event)">
+                    <i class="fas fa-table"></i>
+                    <span>Datos</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchPage('settings', event)">
+                    <i class="fas fa-cog"></i>
+                    <span>Configuración</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="version-info">
+                    <small>v1.0.0</small>
                 </div>
-                <button onclick="loadSampleData()" class="btn-compact">📊 Ejemplo</button>
-
-                <div class="control-separator"></div>
-
-                <label class="compact-label">
-                    Semanas:
-                    <input type="number" id="forecastWeeks" value="14" min="1" max="52">
-                </label>
-                <label class="compact-label">
-                    Año:
-                    <select id="yearFilter" onchange="updateAllCharts()">
-                        <option value="">Todos</option>
-                    </select>
-                </label>
-
-                <div class="control-separator"></div>
-
-                <button onclick="generateAllForecasts()" class="btn-compact btn-primary">🔮 Generar</button>
-                <button onclick="exportResults()" class="btn-compact btn-primary">💾 Exportar</button>
             </div>
-        </header>
+        </aside>
 
-        <div class="content">
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="main-wrapper">
+            <!-- HEADER SUPERIOR -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 id="pageTitle">Dashboard</h1>
+                    <p id="pageSubtitle">Análisis de predicción de consumo</p>
+                </div>
+
+                <div class="header-right">
+                    <div class="header-stats">
+                        <div class="header-stat">
+                            <span class="stat-label">Transacciones</span>
+                            <span class="stat-value" id="statTransactions">0</span>
+                        </div>
+                        <div class="header-stat">
+                            <span class="stat-label">Monto Total</span>
+                            <span class="stat-value" id="statAmount">Q 0</span>
+                        </div>
+                        <div class="header-stat">
+                            <span class="stat-label">Categorías</span>
+                            <span class="stat-value" id="statCategories">0</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- BARRA DE HERRAMIENTAS -->
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="csvFile" accept=".csv" onchange="handleFileUpload(event)">
+                        <label for="csvFile">
+                            <i class="fas fa-upload"></i>
+                            <span>Cargar CSV</span>
+                        </label>
+                    </div>
+                    <button onclick="loadSampleData()" class="btn-toolbar">
+                        <i class="fas fa-database"></i>
+                        <span>Datos Ejemplo</span>
+                    </button>
+                </div>
+
+                <div class="toolbar-center">
+                    <div class="control-group">
+                        <label>
+                            <i class="fas fa-calendar"></i>
+                            Horizonte de Pronóstico:
+                            <input type="number" id="forecastWeeks" value="14" min="1" max="52" onchange="updateForecastHorizon()">
+                            <span style="font-size: 0.85em; color: #6b7280; margin-left: 4px;">semanas</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="toolbar-right">
+                    <button onclick="generateAllForecasts()" class="btn-toolbar btn-primary">
+                        <i class="fas fa-play"></i>
+                        <span>Generar Pronóstico</span>
+                    </button>
+                    <button onclick="exportResults()" class="btn-toolbar btn-success">
+                        <i class="fas fa-download"></i>
+                        <span>Descargar CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTENIDO DE PÁGINAS -->
             <main class="main-content">
-
                 <div id="errorContainer" class="error-container"></div>
 
-                <div class="charts-grid">
-                    <section class="section">
-                        <h2>📊 Serie Temporal</h2>
-                        <div class="controls">
-                            <select id="categorySelect" onchange="updateTimeseriesChart()">
-                                <option value="">Todas las categorías</option>
-                            </select>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="timeseriesChart"></canvas>
-                        </div>
-                    </section>
+                <!-- PÁGINA: DASHBOARD -->
+                <div id="page-dashboard" class="page-content active">
+                    <div class="dashboard-grid">
+                        <!-- KPI Cards -->
+                        <div class="kpi-section">
+                            <div class="kpi-card">
+                                <div class="kpi-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <i class="fas fa-arrow-trend-up"></i>
+                                </div>
+                                <div class="kpi-content">
+                                    <span class="kpi-label">Crecimiento Promedio</span>
+                                    <span class="kpi-value" id="kpiGrowth">0%</span>
+                                </div>
+                            </div>
 
-                    <section class="section">
-                        <h2>🔮 Pronóstico</h2>
-                        <div class="chart-container">
-                            <canvas id="forecastChart"></canvas>
+                            <div class="kpi-card">
+                                <div class="kpi-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                    <i class="fas fa-chart-pie"></i>
+                                </div>
+                                <div class="kpi-content">
+                                    <span class="kpi-label">Categoría Principal</span>
+                                    <span class="kpi-value" id="kpiTopCategory">-</span>
+                                </div>
+                            </div>
+
+                            <div class="kpi-card">
+                                <div class="kpi-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="kpi-content">
+                                    <span class="kpi-label">Período Analizado</span>
+                                    <span class="kpi-value" id="kpiPeriod">-</span>
+                                </div>
+                            </div>
+
+                            <div class="kpi-card">
+                                <div class="kpi-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="kpi-content">
+                                    <span class="kpi-label">Precisión ARIMA</span>
+                                    <span class="kpi-value" id="kpiAccuracy">-</span>
+                                </div>
+                            </div>
                         </div>
-                    </section>
+
+                        <!-- Gráficos principales -->
+                        <div class="chart-section">
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3><i class="fas fa-chart-line"></i> Tendencia General</h3>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="trendChart"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3><i class="fas fa-chart-bar"></i> Top Categorías</h3>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="topCategoriesChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <section class="section">
-                    <h2>🔄 Comparación de Categorías</h2>
-                    <div class="chart-container">
-                        <canvas id="comparisonChart"></canvas>
-                    </div>
-                    <!-- CHECKBOXES DE CATEGORÍAS DEBAJO DEL GRÁFICO -->
-                    <div class="category-legend">
-                        <div class="category-checkboxes" id="categoryCheckboxes"></div>
-                    </div>
-                </section>
+                <!-- PÁGINA: ANÁLISIS -->
+                <div id="page-analysis" class="page-content">
+                    <div class="analysis-grid">
+                        <div class="chart-card full-width">
+                            <div class="chart-header">
+                                <h3><i class="fas fa-chart-line"></i> Serie Temporal Detallada</h3>
+                                <div class="chart-controls">
+                                    <select id="categorySelect" onchange="updateTimeseriesChart()">
+                                        <option value="">Todas las categorías</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="timeseriesChart"></canvas>
+                            </div>
+                        </div>
 
-                <section class="section">
-                    <h2>📋 Tabla de Datos</h2>
-                    <div class="table-container">
-                        <table id="dataTable" class="display">
-                            <thead>
-                                <tr id="tableHeaderRow">
-                                    <th>Fecha</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody"></tbody>
-                        </table>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3><i class="fas fa-chart-bar"></i> Distribución por Categoría</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="distributionChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3><i class="fas fa-percent"></i> Participación de Mercado</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="marketShareChart"></canvas>
+                            </div>
+                        </div>
                     </div>
-                </section>
+                </div>
+
+                <!-- PÁGINA: PRONÓSTICOS -->
+                <div id="page-forecast" class="page-content">
+                    <div class="forecast-grid">
+                        <div class="chart-card full-width">
+                            <div class="chart-header">
+                                <h3><i class="fas fa-crystal-ball"></i> Pronóstico ARIMA</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="forecastChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card full-width">
+                            <div class="chart-header">
+                                <h3><i class="fas fa-layer-group"></i> Comparación de Categorías</h3>
+                                <div class="category-legend">
+                                    <div class="category-checkboxes" id="categoryCheckboxes"></div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="comparisonChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PÁGINA: DATOS -->
+                <div id="page-data" class="page-content">
+                    <div class="data-grid">
+                        <div class="table-card">
+                            <div class="table-header">
+                                <h3><i class="fas fa-table"></i> Datos Históricos</h3>
+                            </div>
+                            <div class="table-container">
+                                <table id="dataTable" class="display">
+                                    <thead>
+                                        <tr id="tableHeaderRow">
+                                            <th>Fecha</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PÁGINA: CONFIGURACIÓN -->
+                <div id="page-settings" class="page-content">
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <h3><i class="fas fa-sliders-h"></i> Configuración del Modelo</h3>
+                            <div class="settings-content">
+                                <div class="setting-item">
+                                    <label>Horizonte de Pronóstico (semanas)</label>
+                                    <input type="number" id="settingsForecastWeeks" value="14" min="1" max="52">
+                                </div>
+                                <div class="setting-item">
+                                    <label>Nivel de Confianza</label>
+                                    <select id="settingsConfidence">
+                                        <option value="0.90">90%</option>
+                                        <option value="0.95" selected>95%</option>
+                                        <option value="0.99">99%</option>
+                                    </select>
+                                </div>
+                                <div class="setting-item">
+                                    <label>Algoritmo</label>
+                                    <select id="settingsAlgorithm">
+                                        <option value="arima" selected>ARIMA</option>
+                                        <option value="linear">Regresión Lineal</option>
+                                    </select>
+                                </div>
+                                <button class="btn-primary" onclick="saveSettings()">
+                                    <i class="fas fa-save"></i> Guardar Configuración
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3><i class="fas fa-info-circle"></i> Información del Sistema</h3>
+                            <div class="settings-content">
+                                <div class="info-item">
+                                    <span class="info-label">Versión:</span>
+                                    <span class="info-value">1.0.0</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Algoritmo Activo:</span>
+                                    <span class="info-value">ARIMA</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Categorías Soportadas:</span>
+                                    <span class="info-value">10</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Precisión Esperada:</span>
+                                    <span class="info-value">8-12% sMAPE</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
 
     <script src="data-processor.js"></script>
+    <script src="arima.js"></script>
     <script src="forecaster.js"></script>
+    <script src="navigation.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

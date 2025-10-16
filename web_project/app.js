@@ -11,6 +11,11 @@ let dataTable = null;
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Aplicación iniciada');
     loadSampleData();
+
+    // Esperar a que se carguen los datos y luego generar pronósticos por defecto
+    setTimeout(() => {
+        generateAllForecasts();
+    }, 500);
 });
 
 /**
@@ -47,7 +52,7 @@ function loadSampleData() {
 function handleFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
-    
+
     const reader = new FileReader();
     reader.onload = function(e) {
         const csv = e.target.result;
@@ -69,8 +74,18 @@ function updateUI() {
     updateYearFilter();
     updateCategoryCheckboxes();
     updateCategorySelect();
+    updateTimeseriesChart();
     updateComparisonChart();
     updateDataTable();
+
+    // Generar pronóstico por defecto
+    const weeks = parseInt(document.getElementById('forecastWeeks').value) || 14;
+    forecaster.forecastAll(weeks);
+
+    const firstForecast = Object.values(forecaster.forecasts)[0];
+    if (firstForecast) {
+        updateForecastChart(firstForecast.category);
+    }
 }
 
 /**
@@ -124,6 +139,9 @@ function updateCategoryCheckboxes() {
         '#a8edea', '#fed6e3'
     ];
 
+    // Limpiar categorías seleccionadas previas
+    selectedCategories.clear();
+
     dataProcessor.categories.forEach((cat, idx) => {
         const div = document.createElement('div');
         div.className = 'category-checkbox';
@@ -135,7 +153,7 @@ function updateCategoryCheckboxes() {
         checkbox.type = 'checkbox';
         checkbox.id = `cat-${idx}`;
         checkbox.value = cat;
-        checkbox.checked = idx === 0;
+        checkbox.checked = true; // TODAS MARCADAS POR DEFECTO
         checkbox.style.accentColor = color;
         checkbox.onchange = function() {
             if (this.checked) {
@@ -155,9 +173,8 @@ function updateCategoryCheckboxes() {
         div.appendChild(label);
         container.appendChild(div);
 
-        if (idx === 0) {
-            selectedCategories.add(cat);
-        }
+        // AGREGAR TODAS LAS CATEGORÍAS AL CONJUNTO
+        selectedCategories.add(cat);
     });
 }
 
@@ -167,7 +184,7 @@ function updateCategoryCheckboxes() {
 function updateCategorySelect() {
     const select = document.getElementById('categorySelect');
     select.innerHTML = '<option value="">Todas las categorías</option>' +
-        dataProcessor.categories.map(cat => 
+        dataProcessor.categories.map(cat =>
             `<option value="${cat}">${cat}</option>`
         ).join('');
 }
@@ -343,13 +360,13 @@ function generateAllForecasts() {
 function updateForecastChart(category) {
     const forecast = forecaster.forecasts[category];
     if (!forecast) return;
-    
+
     const ctx = document.getElementById('forecastChart').getContext('2d');
-    
+
     if (charts.forecast) {
         charts.forecast.destroy();
     }
-    
+
     charts.forecast = new Chart(ctx, {
         type: 'line',
         data: {
@@ -409,14 +426,28 @@ function updateForecastChart(category) {
  */
 function updateDataTable() {
     const allData = dataProcessor.getAllWeeklyData();
-    if (!allData.dates || allData.dates.length === 0) return;
+    if (!allData.dates || allData.dates.length === 0) {
+        console.warn('No hay datos para mostrar en la tabla');
+        return;
+    }
 
     const tbody = document.getElementById('tableBody');
     const headerRow = document.getElementById('tableHeaderRow');
+
+    if (!tbody || !headerRow) {
+        console.error('Elementos de tabla no encontrados');
+        return;
+    }
+
+    // Limpiar tabla anterior
     tbody.innerHTML = '';
+    headerRow.innerHTML = '';
 
     // Actualizar encabezado de tabla con todas las categorías
-    headerRow.innerHTML = '<th>Fecha</th>';
+    const thFecha = document.createElement('th');
+    thFecha.textContent = 'Fecha';
+    headerRow.appendChild(thFecha);
+
     dataProcessor.categories.forEach(cat => {
         const th = document.createElement('th');
         th.textContent = cat;
@@ -424,7 +455,7 @@ function updateDataTable() {
     });
 
     // Agregar todas las filas
-    allData.dates.forEach(date => {
+    allData.dates.forEach((date, dateIdx) => {
         const row = document.createElement('tr');
 
         // Celda de fecha
@@ -434,8 +465,7 @@ function updateDataTable() {
 
         // Celdas de categorías
         dataProcessor.categories.forEach(cat => {
-            const idx = allData.dates.indexOf(date);
-            const value = allData[cat][idx] || 0;
+            const value = allData[cat][dateIdx] || 0;
             const cell = document.createElement('td');
             cell.textContent = 'Q ' + value.toLocaleString('es-GT', {maximumFractionDigits: 0});
             row.appendChild(cell);
@@ -444,25 +474,34 @@ function updateDataTable() {
         tbody.appendChild(row);
     });
 
+    console.log('Tabla actualizada con ' + allData.dates.length + ' filas');
+
     // Destruir DataTable anterior si existe
-    if (dataTable) {
-        dataTable.destroy();
+    if ($.fn.DataTable.isDataTable('#dataTable')) {
+        $('#dataTable').DataTable().destroy();
     }
 
-    // Inicializar DataTable
-    dataTable = $('#dataTable').DataTable({
-        paging: true,
-        pageLength: 10,
-        searching: true,
-        ordering: true,
-        info: true,
-        language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
-        },
-        columnDefs: [
-            { orderable: true, targets: 0 }
-        ]
-    });
+    // Inicializar DataTable con pequeño delay
+    setTimeout(() => {
+        try {
+            dataTable = $('#dataTable').DataTable({
+                paging: true,
+                pageLength: 10,
+                searching: true,
+                ordering: true,
+                info: true,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                },
+                columnDefs: [
+                    { orderable: true, targets: 0 }
+                ]
+            });
+            console.log('DataTable inicializado correctamente');
+        } catch(e) {
+            console.error('Error al inicializar DataTable:', e);
+        }
+    }, 100);
 }
 
 /**
@@ -496,3 +535,212 @@ function showMessage(msg, type = 'info') {
     });
 }
 
+/**
+ * Actualiza el gráfico de pronóstico (versión mejorada para nueva UI)
+ */
+function updateForecastChart() {
+    const allForecasts = forecaster.forecasts;
+    if (Object.keys(allForecasts).length === 0) return;
+
+    const firstCategory = Object.keys(allForecasts)[0];
+    const forecast = allForecasts[firstCategory];
+
+    const ctx = document.getElementById('forecastChart');
+    if (!ctx) return;
+
+    if (charts.forecast) {
+        charts.forecast.destroy();
+    }
+
+    charts.forecast = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [...forecast.historicalDates, ...forecast.forecastDates],
+            datasets: [
+                {
+                    label: 'Histórico',
+                    data: [...forecast.historicalValues, ...Array(forecast.forecastDates.length).fill(null)],
+                    borderColor: '#0066cc',
+                    backgroundColor: 'rgba(0, 102, 204, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Pronóstico ARIMA',
+                    data: [...Array(forecast.historicalDates.length).fill(null), ...forecast.forecastValues],
+                    borderColor: '#2c5aa0',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#2c5aa0'
+                },
+                {
+                    label: 'Intervalo Superior (95%)',
+                    data: [...Array(forecast.historicalDates.length).fill(null), ...forecast.confidence.upper],
+                    borderColor: 'rgba(44, 90, 160, 0.3)',
+                    borderDash: [2, 2],
+                    borderWidth: 1,
+                    fill: false
+                },
+                {
+                    label: 'Intervalo Inferior (95%)',
+                    data: [...Array(forecast.historicalDates.length).fill(null), ...forecast.confidence.lower],
+                    borderColor: 'rgba(44, 90, 160, 0.3)',
+                    borderDash: [2, 2],
+                    borderWidth: 1,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+/**
+ * Actualiza el gráfico de comparación (versión mejorada para nueva UI)
+ */
+function updateComparisonChart() {
+    const allData = dataProcessor.getAllWeeklyData();
+    if (!allData.dates || allData.dates.length === 0) return;
+
+    const ctx = document.getElementById('comparisonChart');
+    if (!ctx) return;
+
+    if (charts.comparison) {
+        charts.comparison.destroy();
+    }
+
+    const colors = [
+        '#0066cc', '#2c5aa0', '#1e3a5f', '#0052a3', '#1a2f4a',
+        '#2d7a3e', '#c41e3a', '#d97706', '#f59e0b', '#10b981'
+    ];
+
+    // Usar solo categorías seleccionadas
+    const categoriesToShow = selectedCategories.size > 0 ?
+        Array.from(selectedCategories) :
+        dataProcessor.categories;
+
+    const datasets = categoriesToShow.map((cat, idx) => {
+        const catIdx = dataProcessor.categories.indexOf(cat);
+        return {
+            label: cat,
+            data: allData[cat],
+            borderColor: colors[catIdx % colors.length],
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            tension: 0.4,
+            pointRadius: 3
+        };
+    });
+
+    charts.comparison = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: allData.dates,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: { font: { size: 11 }, padding: 15 }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+
+
+/**
+ * Actualiza el horizonte de pronóstico
+ */
+function updateForecastHorizon() {
+    const weeks = parseInt(document.getElementById('forecastWeeks').value) || 14;
+
+    // Validar rango
+    if (weeks < 1) {
+        document.getElementById('forecastWeeks').value = 1;
+        return;
+    }
+    if (weeks > 52) {
+        document.getElementById('forecastWeeks').value = 52;
+        return;
+    }
+
+    // Generar nuevos pronósticos con el nuevo horizonte
+    generateAllForecasts();
+}
+
+/**
+ * Genera todos los pronósticos
+ */
+function generateAllForecasts() {
+    const weeks = parseInt(document.getElementById('forecastWeeks').value) || 14;
+
+    if (Object.keys(dataProcessor.weeklyData).length === 0) {
+        showMessage('Por favor carga datos primero', 'error');
+        return;
+    }
+
+    try {
+        forecaster.forecastAll(weeks);
+        updateForecastChart();
+        updateComparisonChart();
+        console.log('✓ Pronósticos generados exitosamente');
+    } catch(e) {
+        console.error('Error al generar pronósticos:', e);
+        showMessage('Error al generar pronósticos: ' + e.message, 'error');
+    }
+}
+
+/**
+ * Muestra mensajes (solo para errores, sin alertas de éxito)
+ */
+function showMessage(message, type) {
+    // Solo mostrar mensajes de error, no de éxito
+    if (type === 'success') {
+        console.log('✓ ' + message);
+        return;
+    }
+
+    const container = document.getElementById('errorContainer');
+    if (!container) return;
+
+    const messageEl = document.createElement('div');
+    messageEl.className = 'error-message';
+
+    let icon = 'fa-info-circle';
+    if (type === 'error') icon = 'fa-exclamation-circle';
+
+    messageEl.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+
+    container.innerHTML = '';
+    container.appendChild(messageEl);
+
+    // Auto-remover después de 5 segundos
+    setTimeout(() => {
+        messageEl.remove();
+    }, 5000);
+}
