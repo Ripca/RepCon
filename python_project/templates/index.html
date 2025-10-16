@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forecasting de Categorías de Consumo</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 600px;
+        }
+        
+        .sidebar {
+            background: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+        }
+        
+        .sidebar h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .category-list {
+            list-style: none;
+        }
+        
+        .category-list li {
+            padding: 10px;
+            margin-bottom: 5px;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .category-list li:hover {
+            background: #e8eaf6;
+            border-left-color: #667eea;
+        }
+        
+        .category-list li.active {
+            background: #667eea;
+            color: white;
+            border-left-color: #764ba2;
+        }
+        
+        .main {
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-card h4 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .chart-container {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        select, input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            
+            header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Forecasting de Categorías de Consumo</h1>
+            <p>Análisis y Pronóstico de Transacciones con Tarjetas de Crédito</p>
+        </header>
+        
+        <div class="content">
+            <div class="sidebar">
+                <h3>Categorías</h3>
+                <ul class="category-list" id="categoryList"></ul>
+                
+                <h3 style="margin-top: 30px;">Acciones</h3>
+                <button onclick="loadAllData()" style="width: 100%; margin-bottom: 10px;">
+                    📈 Cargar Datos
+                </button>
+                <button onclick="generateForecast()" style="width: 100%; margin-bottom: 10px;">
+                    🔮 Generar Pronóstico
+                </button>
+                <button onclick="exportForecast()" style="width: 100%;">
+                    💾 Exportar CSV
+                </button>
+            </div>
+            
+            <div class="main">
+                <div id="errorContainer"></div>
+                
+                <div class="section">
+                    <h2>Resumen de Datos</h2>
+                    <div class="stats-grid" id="statsGrid"></div>
+                </div>
+                
+                <div class="section">
+                    <h2>Serie Temporal</h2>
+                    <div class="controls">
+                        <select id="categorySelect" onchange="updateChart()">
+                            <option value="">Seleccionar categoría...</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <div id="timeseriesChart" class="loading">Cargando...</div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>Comparación de Categorías</h2>
+                    <div class="chart-container">
+                        <div id="comparisonChart" class="loading">Cargando...</div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>Pronóstico</h2>
+                    <div class="controls">
+                        <input type="number" id="forecastWeeks" value="14" min="1" max="52" placeholder="Semanas">
+                    </div>
+                    <div class="chart-container">
+                        <div id="forecastChart" class="loading">Cargando...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let allData = {};
+        let categories = [];
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+            loadDataSummary();
+        });
+        
+        function loadCategories() {
+            fetch('/api/data/categories')
+                .then(r => r.json())
+                .then(data => {
+                    categories = data.categories;
+                    updateCategoryList();
+                    updateCategorySelect();
+                })
+                .catch(e => showError('Error cargando categorías: ' + e));
+        }
+        
+        function updateCategoryList() {
+            const list = document.getElementById('categoryList');
+            list.innerHTML = categories.map((cat, i) => 
+                `<li onclick="selectCategory('${cat}')" class="${i === 0 ? 'active' : ''}">${cat}</li>`
+            ).join('');
+        }
+        
+        function updateCategorySelect() {
+            const select = document.getElementById('categorySelect');
+            select.innerHTML = '<option value="">Todas las categorías</option>' +
+                categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        }
+        
+        function selectCategory(category) {
+            document.querySelectorAll('.category-list li').forEach(li => li.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('categorySelect').value = category;
+            updateChart();
+        }
+        
+        function loadDataSummary() {
+            fetch('/api/data/summary')
+                .then(r => r.json())
+                .then(data => {
+                    const grid = document.getElementById('statsGrid');
+                    grid.innerHTML = `
+                        <div class="stat-card">
+                            <h4>Total de Transacciones</h4>
+                            <div class="value">${(data.total_transactions || 0).toLocaleString()}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Monto Total (Q)</h4>
+                            <div class="value">Q ${(data.total_amount || 0).toLocaleString('es-GT', {maximumFractionDigits: 0})}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Categorías</h4>
+                            <div class="value">${data.categories_count || 0}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Período</h4>
+                            <div class="value">${new Date(data.date_range.start).getFullYear()}</div>
+                        </div>
+                    `;
+                })
+                .catch(e => showError('Error cargando resumen: ' + e));
+        }
+        
+        function loadAllData() {
+            fetch('/api/data/all-weekly')
+                .then(r => r.json())
+                .then(data => {
+                    allData = data;
+                    updateChart();
+                })
+                .catch(e => showError('Error cargando datos: ' + e));
+        }
+        
+        function updateChart() {
+            const category = document.getElementById('categorySelect').value;
+            
+            if (category) {
+                fetch(`/api/chart/timeseries/${category}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        Plotly.newPlot('timeseriesChart', data.data, data.layout, {responsive: true});
+                    })
+                    .catch(e => showError('Error cargando gráfico: ' + e));
+            } else {
+                fetch('/api/chart/comparison')
+                    .then(r => r.json())
+                    .then(data => {
+                        Plotly.newPlot('comparisonChart', data.data, data.layout, {responsive: true});
+                    })
+                    .catch(e => showError('Error cargando comparación: ' + e));
+            }
+        }
+        
+        function generateForecast() {
+            const category = document.getElementById('categorySelect').value;
+            const weeks = parseInt(document.getElementById('forecastWeeks').value) || 14;
+            
+            if (!category) {
+                showError('Selecciona una categoría primero');
+                return;
+            }
+            
+            fetch('/api/forecast', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({category, weeks})
+            })
+            .then(r => r.json())
+            .then(data => {
+                const fig = {
+                    data: [
+                        {
+                            x: data.historical_dates,
+                            y: data.historical_values,
+                            name: 'Histórico',
+                            type: 'scatter',
+                            mode: 'lines+markers'
+                        },
+                        {
+                            x: data.forecast_dates,
+                            y: data.forecast_values,
+                            name: 'Pronóstico',
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            line: {dash: 'dash'}
+                        }
+                    ],
+                    layout: {
+                        title: `Pronóstico: ${category}`,
+                        xaxis: {title: 'Fecha'},
+                        yaxis: {title: 'Monto (Q)'},
+                        hovermode: 'x unified'
+                    }
+                };
+                Plotly.newPlot('forecastChart', fig.data, fig.layout, {responsive: true});
+            })
+            .catch(e => showError('Error generando pronóstico: ' + e));
+        }
+        
+        function exportForecast() {
+            alert('Función de exportación en desarrollo');
+        }
+        
+        function showError(msg) {
+            const container = document.getElementById('errorContainer');
+            container.innerHTML = `<div class="error">${msg}</div>`;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+    </script>
+</body>
+</html>
+

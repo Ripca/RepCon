@@ -1,0 +1,313 @@
+================================================================================
+  📊 FORECASTING DE CATEGORÍAS DE CONSUMO - ESTRUCTURA COMPLETA
+================================================================================
+
+PROYECTO RAÍZ
+├── 📄 README.md                          ← Descripción general del proyecto
+├── 📄 INICIO_RAPIDO.md                   ← Guía de inicio en 30 segundos
+├── 📄 GUIA_INSTALACION.md                ← Instalación paso a paso
+├── 📄 RESUMEN_PROYECTO.md                ← Resumen ejecutivo
+├── 📄 DOCUMENTACION_TECNICA.md           ← Detalles técnicos
+├── 📄 ESTRUCTURA_COMPLETA.txt            ← Este archivo
+├── 📄 instrucciones.html                 ← Instrucciones del hackathon
+├── 📄 presentacion.pdf                   ← Presentación del proyecto
+├── 📄 LICENSE                            ← Licencia
+└── 📄 .gitignore                         ← Configuración Git
+
+================================================================================
+  📁 CARPETA: python_project/
+  Versión Python con Flask - Backend + Frontend
+================================================================================
+
+python_project/
+├── 📄 app.py                             ← Servidor Flask principal
+│   ├── Endpoints API REST
+│   ├── Rutas de datos
+│   ├── Rutas de pronóstico
+│   └── Rutas de gráficos
+│
+├── 📄 data_processor.py                  ← Procesamiento de datos
+│   ├── Carga CSV, JSON, XML
+│   ├── Normalización de datos
+│   ├── Agregación semanal
+│   ├── Cálculo de estadísticas
+│   └── Métodos de acceso a datos
+│
+├── 📄 forecaster.py                      ← Módulo de pronóstico
+│   ├── Regresión lineal
+│   ├── Análisis estacional
+│   ├── Cálculo de confianza
+│   └── Exportación a CSV
+│
+├── 📄 requirements.txt                   ← Dependencias Python
+│   ├── Flask==2.3.3
+│   ├── Pandas==2.0.3
+│   ├── Plotly==5.16.1
+│   ├── Scikit-learn==1.3.0
+│   └── ... (10 librerías totales)
+│
+└── 📁 templates/
+    └── 📄 index.html                     ← Interfaz web Flask
+        ├── Header con título
+        ├── Sidebar con navegación
+        ├── Sección de estadísticas
+        ├── Gráficos interactivos
+        ├── Tabla de datos
+        └── Scripts de Plotly
+
+================================================================================
+  📁 CARPETA: web_project/
+  Versión HTML/CSS/JavaScript - Standalone
+================================================================================
+
+web_project/
+├── 📄 index.html                         ← Página principal
+│   ├── Estructura HTML5
+│   ├── Sidebar con categorías
+│   ├── Sección de estadísticas
+│   ├── Contenedores de gráficos
+│   ├── Tabla de datos
+│   └── Importación de scripts
+│
+├── 📄 styles.css                         ← Estilos CSS3
+│   ├── Variables CSS (colores, fuentes)
+│   ├── Diseño responsivo (Flexbox, Grid)
+│   ├── Componentes (botones, tarjetas)
+│   ├── Animaciones
+│   ├── Media queries (mobile, tablet)
+│   └── Scrollbars personalizadas
+│
+├── 📄 app.js                             ← Lógica principal
+│   ├── Inicialización
+│   ├── Gestión de eventos
+│   ├── Actualización de UI
+│   ├── Manejo de gráficos
+│   ├── Exportación de datos
+│   └── Mensajes de error
+│
+├── 📄 data-processor.js                  ← Procesamiento de datos
+│   ├── Clase DataProcessor
+│   ├── Carga de CSV
+│   ├── Normalización
+│   ├── Agregación semanal
+│   ├── Cálculo de estadísticas
+│   └── Métodos de acceso
+│
+├── 📄 forecaster.js                      ← Módulo de pronóstico
+│   ├── Clase Forecaster
+│   ├── Regresión lineal
+│   ├── Análisis estacional
+│   ├── Cálculo de confianza
+│   ├── Exportación a CSV
+│   └── Descarga de archivos
+│
+└── 📄 sample-data.csv                    ← Datos de ejemplo
+    ├── 100 registros de ejemplo
+    ├── 10 categorías
+    ├── Fechas de 2024
+    └── Montos realistas
+
+================================================================================
+  📁 CARPETA: data/
+  Datos de Entrada (Múltiples Formatos)
+================================================================================
+
+data/
+├── 📁 csv/                               ← Archivos CSV
+│   ├── TRX_POS_AUTH_2022_v2.csv         (726,634 registros)
+│   ├── TRX_POS_AUTH_2023_v1.csv         (registros 2023)
+│   ├── TRX_POS_AUTH_2024_v2.csv         (registros 2024)
+│   └── TRX_POS_AUTH_2025_v3.csv         (registros 2025)
+│
+├── 📁 json/                              ← Archivos JSON
+│   ├── txnstream-issuer_2022.json       (1,091,648 registros)
+│   ├── txnstream-issuer_2023.json       (registros 2023)
+│   ├── txnstream-issuer_2024.json       (registros 2024)
+│   └── txnstream-issuer_2025.json       (registros 2025)
+│
+└── 📁 xml/                               ← Archivos XML
+    ├── AXIS_ISS_AUTH_2022_batchB.xml    (1,092,778 registros)
+    ├── AXIS_ISS_AUTH_2023_batchC.xml    (registros 2023)
+    ├── AXIS_ISS_AUTH_2024_batchA.xml    (registros 2024)
+    └── AXIS_ISS_AUTH_2025_batchB.xml    (registros 2025)
+
+================================================================================
+  📊 CARACTERÍSTICAS PRINCIPALES
+================================================================================
+
+✅ CARGA DE DATOS
+   • Soporta CSV, JSON, XML
+   • Normalización automática
+   • Validación de datos
+   • Manejo de errores
+
+✅ PROCESAMIENTO
+   • Agregación semanal
+   • Cálculo de estadísticas
+   • Detección de categorías
+   • Rango de fechas
+
+✅ VISUALIZACIÓN
+   • Series temporales
+   • Comparación de categorías
+   • Gráficos interactivos
+   • Tabla de datos
+
+✅ PRONÓSTICO
+   • Regresión lineal
+   • Análisis estacional
+   • Intervalos de confianza (95%)
+   • Horizonte configurable (1-52 semanas)
+
+✅ EXPORTACIÓN
+   • CSV con pronósticos
+   • Formato estándar
+   • Descarga automática
+   • Compatible con Excel
+
+✅ INTERFAZ
+   • Diseño moderno
+   • Responsivo (mobile, tablet, desktop)
+   • Colores gradiente (azul-púrpura)
+   • Animaciones suaves
+
+================================================================================
+  🚀 CÓMO USAR
+================================================================================
+
+OPCIÓN 1: WEB (Más Rápido)
+  1. cd web_project
+  2. python -m http.server 8000
+  3. Abrir http://localhost:8000
+  4. ¡Listo en 30 segundos!
+
+OPCIÓN 2: PYTHON (Más Potente)
+  1. cd python_project
+  2. pip install -r requirements.txt
+  3. python app.py
+  4. Abrir http://localhost:5000
+  5. ¡Listo en 2 minutos!
+
+================================================================================
+  📈 CATEGORÍAS DE CONSUMO
+================================================================================
+
+1. ALIMENTACION          - Compras de alimentos y bebidas
+2. TRANSPORTE           - Gasolina, transporte público, taxis
+3. ENTRETENIMIENTO      - Cine, conciertos, eventos
+4. EDUCACION            - Cursos, libros, materiales
+5. CUIDADO PERSONAL     - Salud, belleza, higiene
+6. VIAJES               - Hoteles, vuelos, tours
+7. COMPRAS EN LINEA     - E-commerce, tiendas online
+8. HOGAR                - Muebles, electrodomésticos
+9. TECNOLOGIA           - Gadgets, software, accesorios
+10. ABASTECIMIENTO      - Suministros, mayoreo
+
+================================================================================
+  📊 ESTADÍSTICAS DE DATOS
+================================================================================
+
+TOTAL DE REGISTROS:     ~3,000,000+ transacciones
+PERÍODO:                2022-2025 (4 años)
+CATEGORÍAS:             10 principales
+FORMATOS:               CSV, JSON, XML
+TAMAÑO TOTAL:           ~500 MB
+
+DATOS POR FORMATO:
+  • CSV:   726,634 registros
+  • JSON:  1,091,648 registros
+  • XML:   1,092,778 registros
+
+================================================================================
+  🔧 TECNOLOGÍAS UTILIZADAS
+================================================================================
+
+PYTHON
+  • Flask 2.3.3          - Framework web
+  • Pandas 2.0.3         - Procesamiento de datos
+  • Plotly 5.16.1        - Visualización interactiva
+  • Scikit-learn 1.3.0   - Machine Learning
+  • Statsmodels 0.14.0   - Series temporales
+
+JAVASCRIPT
+  • Chart.js 3.9.1       - Gráficos
+  • Papa Parse 5.4.1     - Parsing CSV
+  • Vanilla JS           - Sin dependencias externas
+
+HTML/CSS
+  • HTML5                - Estructura
+  • CSS3                 - Estilos (Flexbox, Grid)
+  • Responsive Design    - Mobile-first
+
+================================================================================
+  📚 DOCUMENTACIÓN
+================================================================================
+
+INICIO_RAPIDO.md              - Comienza en 30 segundos
+GUIA_INSTALACION.md           - Instalación paso a paso
+RESUMEN_PROYECTO.md           - Resumen ejecutivo
+DOCUMENTACION_TECNICA.md      - Detalles técnicos
+README.md                     - Descripción general
+
+================================================================================
+  ✅ CHECKLIST DE FUNCIONALIDADES
+================================================================================
+
+[✓] Carga de datos (CSV, JSON, XML)
+[✓] Normalización de datos
+[✓] Agregación semanal
+[✓] Cálculo de estadísticas
+[✓] Visualización de series temporales
+[✓] Comparación de categorías
+[✓] Pronóstico con regresión lineal
+[✓] Análisis estacional
+[✓] Intervalos de confianza
+[✓] Exportación a CSV
+[✓] Interfaz responsiva
+[✓] Datos de ejemplo
+[✓] Documentación completa
+[✓] Dos versiones (Python + Web)
+
+================================================================================
+  🎯 PRÓXIMOS PASOS
+================================================================================
+
+1. Elige tu versión favorita (Python o Web)
+2. Sigue la guía de instalación
+3. Carga datos de ejemplo
+4. Explora los gráficos
+5. Genera pronósticos
+6. Exporta resultados
+7. Carga tus propios datos
+8. Analiza patrones
+9. Toma decisiones basadas en datos
+
+================================================================================
+  📞 SOPORTE
+================================================================================
+
+¿Problemas?
+  1. Revisa la consola del navegador (F12)
+  2. Verifica el formato de tus datos
+  3. Consulta la documentación
+  4. Intenta con datos de ejemplo
+
+¿Preguntas?
+  • Revisa INICIO_RAPIDO.md
+  • Consulta GUIA_INSTALACION.md
+  • Lee DOCUMENTACION_TECNICA.md
+
+================================================================================
+  🎉 ¡PROYECTO COMPLETADO!
+================================================================================
+
+Versión:        1.0.0
+Fecha:          2025-01-16
+Estado:         ✅ Listo para Producción
+Licencia:       Proyecto Hackathon 2025
+
+Desarrollado por: Centro de Excelencia de Capacidades Analíticas
+Para: Banco Agromercantil
+
+================================================================================
+
