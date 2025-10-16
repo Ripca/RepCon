@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forecasting de Categorías de Consumo</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -17,36 +20,43 @@
                 <p>Análisis y Pronóstico de Transacciones</p>
             </div>
         </header>
-        
+
         <div class="content">
-            <aside class="sidebar">
-                <div class="sidebar-section">
-                    <h3>📁 Cargar Datos</h3>
-                    <div class="file-input-wrapper">
-                        <input type="file" id="csvFile" accept=".csv" onchange="handleFileUpload(event)">
-                        <label for="csvFile">Seleccionar CSV</label>
-                    </div>
-                    <button onclick="loadSampleData()" class="btn-secondary">Datos de Ejemplo</button>
-                </div>
-
-                <div class="sidebar-section">
-                    <h3>⚙️ Opciones</h3>
-                    <label>
-                        Semanas a Pronosticar:
-                        <input type="number" id="forecastWeeks" value="14" min="1" max="52">
-                    </label>
-                    <button onclick="generateAllForecasts()" class="btn-primary">🔮 Generar Pronósticos</button>
-                    <button onclick="exportResults()" class="btn-primary">💾 Exportar Resultados</button>
-                </div>
-
-                <div class="sidebar-section">
-                    <h3>📂 Categorías</h3>
-                    <ul class="category-list" id="categoryList"></ul>
-                </div>
-            </aside>
-            
             <main class="main-content">
                 <div id="errorContainer" class="error-container"></div>
+
+                <!-- CONTROLES SUPERIORES -->
+                <div class="top-controls">
+                    <div class="control-group">
+                        <h3>📁 Cargar Datos</h3>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="csvFile" accept=".csv" onchange="handleFileUpload(event)">
+                            <label for="csvFile">Seleccionar CSV</label>
+                        </div>
+                        <button onclick="loadSampleData()" class="btn-secondary">Datos de Ejemplo</button>
+                    </div>
+
+                    <div class="control-group">
+                        <h3>⚙️ Opciones</h3>
+                        <label>
+                            Semanas a Pronosticar:
+                            <input type="number" id="forecastWeeks" value="14" min="1" max="52">
+                        </label>
+                        <label>
+                            Filtrar por Año:
+                            <select id="yearFilter" onchange="updateAllCharts()">
+                                <option value="">Todos los años</option>
+                            </select>
+                        </label>
+                        <button onclick="generateAllForecasts()" class="btn-primary">🔮 Generar Pronósticos</button>
+                        <button onclick="exportResults()" class="btn-primary">💾 Exportar Resultados</button>
+                    </div>
+
+                    <div class="control-group">
+                        <h3>📂 Categorías</h3>
+                        <div class="category-checkboxes" id="categoryCheckboxes"></div>
+                    </div>
+                </div>
 
                 <section class="section stats-section">
                     <div class="stats-grid" id="statsGrid">
@@ -100,7 +110,7 @@
                 <section class="section">
                     <h2>📋 Tabla de Datos</h2>
                     <div class="table-container">
-                        <table id="dataTable">
+                        <table id="dataTable" class="display">
                             <thead>
                                 <tr id="tableHeaderRow">
                                     <th>Fecha</th>
@@ -113,7 +123,7 @@
             </main>
         </div>
     </div>
-    
+
     <script src="data-processor.js"></script>
     <script src="forecaster.js"></script>
     <script src="app.js"></script>

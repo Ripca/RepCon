@@ -4,6 +4,8 @@
 
 let charts = {};
 let currentCategory = null;
+let selectedCategories = new Set();
+let dataTable = null;
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', function() {
@@ -21,20 +23,20 @@ function loadSampleData() {
         'CUIDADO PERSONAL', 'VIAJES', 'COMPRAS EN LINEA', 'HOGAR',
         'TECNOLOGIA', 'ABASTECIMIENTO'
     ];
-    
+
     let csv = 'cliente_id,fecha,monto,categoria\n';
-    const startDate = new Date('2023-01-01');
-    
+    const startDate = new Date('2022-01-01');
+
     for (let i = 0; i < 1000; i++) {
         const date = new Date(startDate);
-        date.setDate(date.getDate() + Math.floor(Math.random() * 365));
+        date.setDate(date.getDate() + Math.floor(Math.random() * 1095)); // 3 años
         const category = categories[Math.floor(Math.random() * categories.length)];
         const amount = (Math.random() * 15000 + 100).toFixed(2);
         const clientId = 'C' + String(Math.floor(Math.random() * 200000)).padStart(6, '0');
-        
+
         csv += `${clientId},${date.toISOString().split('T')[0]},${amount},${category}\n`;
     }
-    
+
     dataProcessor.loadFromCSV(csv);
     updateUI();
 }
@@ -64,7 +66,8 @@ function handleFileUpload(event) {
  */
 function updateUI() {
     updateStats();
-    updateCategoryList();
+    updateYearFilter();
+    updateCategoryCheckboxes();
     updateCategorySelect();
     updateComparisonChart();
     updateDataTable();
@@ -75,29 +78,76 @@ function updateUI() {
  */
 function updateStats() {
     const summary = dataProcessor.getSummary();
-    
-    document.getElementById('statTransactions').textContent = 
+
+    document.getElementById('statTransactions').textContent =
         summary.totalTransactions.toLocaleString();
-    document.getElementById('statAmount').textContent = 
+    document.getElementById('statAmount').textContent =
         'Q ' + summary.totalAmount.toLocaleString('es-GT', {maximumFractionDigits: 0});
-    document.getElementById('statCategories').textContent = 
+    document.getElementById('statCategories').textContent =
         summary.categoriesCount;
-    document.getElementById('statPeriod').textContent = 
-        summary.dateRange.start.getFullYear();
+
+    const startYear = summary.dateRange.start.getFullYear();
+    const endYear = summary.dateRange.end.getFullYear();
+    document.getElementById('statPeriod').textContent =
+        startYear === endYear ? startYear : `${startYear}-${endYear}`;
 }
 
 /**
- * Actualiza lista de categorías
+ * Actualiza filtro de años
  */
-function updateCategoryList() {
-    const list = document.getElementById('categoryList');
-    list.innerHTML = dataProcessor.categories.map((cat, idx) => 
-        `<li onclick="selectCategory('${cat}')" class="${idx === 0 ? 'active' : ''}">${cat}</li>`
-    ).join('');
-    
-    if (dataProcessor.categories.length > 0 && !currentCategory) {
-        currentCategory = dataProcessor.categories[0];
+function updateYearFilter() {
+    const summary = dataProcessor.getSummary();
+    const startYear = summary.dateRange.start.getFullYear();
+    const endYear = summary.dateRange.end.getFullYear();
+
+    const yearSelect = document.getElementById('yearFilter');
+    yearSelect.innerHTML = '<option value="">Todos los años</option>';
+
+    for (let year = startYear; year <= endYear; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
     }
+}
+
+/**
+ * Actualiza checkboxes de categorías
+ */
+function updateCategoryCheckboxes() {
+    const container = document.getElementById('categoryCheckboxes');
+    container.innerHTML = '';
+
+    dataProcessor.categories.forEach((cat, idx) => {
+        const div = document.createElement('div');
+        div.className = 'category-checkbox';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `cat-${idx}`;
+        checkbox.value = cat;
+        checkbox.checked = idx === 0;
+        checkbox.onchange = function() {
+            if (this.checked) {
+                selectedCategories.add(cat);
+            } else {
+                selectedCategories.delete(cat);
+            }
+            updateComparisonChart();
+        };
+
+        const label = document.createElement('label');
+        label.htmlFor = `cat-${idx}`;
+        label.textContent = cat;
+
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        container.appendChild(div);
+
+        if (idx === 0) {
+            selectedCategories.add(cat);
+        }
+    });
 }
 
 /**
@@ -112,12 +162,19 @@ function updateCategorySelect() {
 }
 
 /**
+ * Actualiza todos los gráficos (usado por filtro de año)
+ */
+function updateAllCharts() {
+    updateComparisonChart();
+    updateTimeseriesChart();
+    updateDataTable();
+}
+
+/**
  * Selecciona una categoría
  */
 function selectCategory(category) {
     currentCategory = category;
-    document.querySelectorAll('.category-list li').forEach(li => li.classList.remove('active'));
-    event.target.classList.add('active');
     document.getElementById('categorySelect').value = category;
     updateTimeseriesChart();
 }
@@ -181,29 +238,37 @@ function updateTimeseriesChart() {
 function updateComparisonChart() {
     const allData = dataProcessor.getAllWeeklyData();
     if (!allData.dates || allData.dates.length === 0) return;
-    
+
     const ctx = document.getElementById('comparisonChart').getContext('2d');
-    
+
     if (charts.comparison) {
         charts.comparison.destroy();
     }
-    
+
     const colors = [
         '#667eea', '#764ba2', '#f093fb', '#4facfe',
         '#43e97b', '#fa709a', '#fee140', '#30b0fe',
         '#a8edea', '#fed6e3'
     ];
-    
-    const datasets = dataProcessor.categories.map((cat, idx) => ({
-        label: cat,
-        data: allData[cat],
-        borderColor: colors[idx % colors.length],
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        tension: 0.4,
-        pointRadius: 3
-    }));
-    
+
+    // Usar solo categorías seleccionadas
+    const categoriesToShow = selectedCategories.size > 0 ?
+        Array.from(selectedCategories) :
+        dataProcessor.categories;
+
+    const datasets = categoriesToShow.map((cat, idx) => {
+        const catIdx = dataProcessor.categories.indexOf(cat);
+        return {
+            label: cat,
+            data: allData[cat],
+            borderColor: colors[catIdx % colors.length],
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            tension: 0.4,
+            pointRadius: 3
+        };
+    });
+
     charts.comparison = new Chart(ctx, {
         type: 'line',
         data: {
@@ -320,7 +385,7 @@ function updateForecastChart(category) {
 }
 
 /**
- * Actualiza tabla de datos
+ * Actualiza tabla de datos con DataTable
  */
 function updateDataTable() {
     const allData = dataProcessor.getAllWeeklyData();
@@ -338,8 +403,8 @@ function updateDataTable() {
         headerRow.appendChild(th);
     });
 
-    // Mostrar últimas 15 filas en orden inverso
-    allData.dates.slice(-15).reverse().forEach(date => {
+    // Agregar todas las filas
+    allData.dates.forEach(date => {
         const row = document.createElement('tr');
 
         // Celda de fecha
@@ -358,6 +423,26 @@ function updateDataTable() {
 
         tbody.appendChild(row);
     });
+
+    // Destruir DataTable anterior si existe
+    if (dataTable) {
+        dataTable.destroy();
+    }
+
+    // Inicializar DataTable
+    dataTable = $('#dataTable').DataTable({
+        paging: true,
+        pageLength: 10,
+        searching: true,
+        ordering: true,
+        info: true,
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        },
+        columnDefs: [
+            { orderable: true, targets: 0 }
+        ]
+    });
 }
 
 /**
@@ -368,9 +453,8 @@ function exportResults() {
         showMessage('Genera pronósticos primero', 'error');
         return;
     }
-    
+
     forecaster.downloadCSV();
-    showMessage('Archivo descargado exitosamente', 'success');
 }
 
 /**

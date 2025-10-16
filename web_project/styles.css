@@ -55,28 +55,32 @@ header p {
 
 .content {
     display: grid;
-    grid-template-columns: 250px 1fr;
+    grid-template-columns: 1fr;
     flex: 1;
     overflow: hidden;
     gap: 0;
 }
 
-.sidebar {
-    background: var(--light);
+.top-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
     padding: 20px;
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
-    max-height: calc(100vh - 140px);
+    background: var(--light);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
 }
 
-.sidebar-section {
-    margin-bottom: 20px;
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.sidebar-section h3 {
+.control-group h3 {
     color: var(--primary);
-    margin-bottom: 12px;
-    font-size: 1em;
+    margin: 0;
+    font-size: 0.95em;
     font-weight: 600;
 }
 
@@ -107,46 +111,55 @@ header p {
     color: white;
 }
 
-.category-list {
-    list-style: none;
-    max-height: 250px;
-    overflow-y: auto;
+.category-checkboxes {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
 }
 
-.category-list li {
+.category-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding: 8px 10px;
     background: white;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s;
-    border-left: 3px solid transparent;
-    font-size: 0.85em;
-    text-align: center;
+    border: 1px solid var(--border);
+    font-size: 0.9em;
 }
 
-.category-list li:hover {
+.category-checkbox:hover {
     background: #e8eaf6;
-    border-left-color: var(--primary);
-    transform: translateX(5px);
+    border-color: var(--primary);
 }
 
-.category-list li.active {
-    background: var(--primary);
-    color: white;
-    border-left-color: var(--secondary);
+.category-checkbox input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+}
+
+.category-checkbox input[type="checkbox"]:checked + label {
     font-weight: 600;
+    color: var(--primary);
+}
+
+.category-checkbox label {
+    cursor: pointer;
+    margin: 0;
+    flex: 1;
 }
 
 .main-content {
     padding: 20px;
     overflow-y: auto;
-    max-height: calc(100vh - 140px);
     display: flex;
     flex-direction: column;
     gap: 15px;
+    flex: 1;
 }
 
 .section {
@@ -346,21 +359,23 @@ tr:hover {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .top-controls {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 1024px) {
-    .content {
+    header h1 {
+        font-size: 1.6em;
+    }
+
+    .top-controls {
         grid-template-columns: 1fr;
     }
 
-    .sidebar {
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-        max-height: auto;
-    }
-
-    header h1 {
-        font-size: 1.6em;
+    .category-checkboxes {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
 }
 
@@ -381,6 +396,11 @@ tr:hover {
         padding: 10px;
     }
 
+    .top-controls {
+        grid-template-columns: 1fr;
+        padding: 10px;
+    }
+
     .stats-grid {
         grid-template-columns: 1fr 1fr;
     }
@@ -389,8 +409,8 @@ tr:hover {
         height: 250px;
     }
 
-    .category-list {
-        grid-template-columns: 1fr;
+    .category-checkboxes {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     }
 }
 
@@ -410,5 +430,61 @@ tr:hover {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--secondary);
+}
+
+/* DataTable Styles */
+.dataTables_wrapper {
+    padding: 15px;
+}
+
+.dataTables_length, .dataTables_filter {
+    margin-bottom: 15px;
+}
+
+.dataTables_length label, .dataTables_filter label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+}
+
+.dataTables_length select, .dataTables_filter input {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.dataTables_paginate {
+    margin-top: 15px;
+    text-align: right;
+}
+
+.paginate_button {
+    padding: 6px 10px;
+    margin: 0 2px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.paginate_button:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.paginate_button.current {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.dataTables_info {
+    margin-top: 10px;
+    font-size: 0.85em;
+    color: #666;
 }
 
