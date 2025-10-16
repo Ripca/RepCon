@@ -14,74 +14,71 @@
 </head>
 <body>
     <div class="container">
-        <header>
+        <!-- HEADER FIJO CON ESTADÍSTICAS -->
+        <header class="fixed-header">
             <div class="header-content">
-                <h1>📊 Forecasting de Consumo</h1>
-                <p>Análisis y Pronóstico de Transacciones</p>
+                <h1>📊 Forecasting</h1>
+            </div>
+
+            <!-- ESTADÍSTICAS FIJAS -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">Transacciones</span>
+                    <span class="stat-value" id="statTransactions">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Monto Total (Q)</span>
+                    <span class="stat-value" id="statAmount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Categorías</span>
+                    <span class="stat-value" id="statCategories">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Período</span>
+                    <span class="stat-value" id="statPeriod">-</span>
+                </div>
+            </div>
+
+            <!-- CONTROLES COMPACTOS -->
+            <div class="compact-controls">
+                <div class="file-input-wrapper">
+                    <input type="file" id="csvFile" accept=".csv" onchange="handleFileUpload(event)">
+                    <label for="csvFile">📁 CSV</label>
+                </div>
+                <button onclick="loadSampleData()" class="btn-compact">📊 Ejemplo</button>
+
+                <div class="control-separator"></div>
+
+                <label class="compact-label">
+                    Semanas:
+                    <input type="number" id="forecastWeeks" value="14" min="1" max="52">
+                </label>
+                <label class="compact-label">
+                    Año:
+                    <select id="yearFilter" onchange="updateAllCharts()">
+                        <option value="">Todos</option>
+                    </select>
+                </label>
+
+                <div class="control-separator"></div>
+
+                <button onclick="generateAllForecasts()" class="btn-compact btn-primary">🔮 Generar</button>
+                <button onclick="exportResults()" class="btn-compact btn-primary">💾 Exportar</button>
             </div>
         </header>
 
         <div class="content">
             <main class="main-content">
+
                 <div id="errorContainer" class="error-container"></div>
-
-                <!-- CONTROLES SUPERIORES -->
-                <div class="top-controls">
-                    <div class="control-group">
-                        <h3>📁 Cargar Datos</h3>
-                        <div class="file-input-wrapper">
-                            <input type="file" id="csvFile" accept=".csv" onchange="handleFileUpload(event)">
-                            <label for="csvFile">Seleccionar CSV</label>
-                        </div>
-                        <button onclick="loadSampleData()" class="btn-secondary">Datos de Ejemplo</button>
-                    </div>
-
-                    <div class="control-group">
-                        <h3>⚙️ Opciones</h3>
-                        <label>
-                            Semanas a Pronosticar:
-                            <input type="number" id="forecastWeeks" value="14" min="1" max="52">
-                        </label>
-                        <label>
-                            Filtrar por Año:
-                            <select id="yearFilter" onchange="updateAllCharts()">
-                                <option value="">Todos los años</option>
-                            </select>
-                        </label>
-                        <div class="button-group">
-                            <button onclick="generateAllForecasts()" class="btn-primary">🔮 Generar</button>
-                            <button onclick="exportResults()" class="btn-primary">💾 Exportar</button>
-                        </div>
-                    </div>
-                </div>
-
-                <section class="section stats-section">
-                    <div class="stats-grid" id="statsGrid">
-                        <div class="stat-card">
-                            <h4>Transacciones</h4>
-                            <div class="value" id="statTransactions">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <h4>Monto Total (Q)</h4>
-                            <div class="value" id="statAmount">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <h4>Categorías</h4>
-                            <div class="value" id="statCategories">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <h4>Período</h4>
-                            <div class="value" id="statPeriod">-</div>
-                        </div>
-                    </div>
-                </section>
 
                 <div class="charts-grid">
                     <section class="section">
                         <h2>📊 Serie Temporal</h2>
                         <div class="controls">
                             <select id="categorySelect" onchange="updateTimeseriesChart()">
-                                <option value="">Seleccionar categoría...</option>
+                                <option value="">Todas las categorías</option>
                             </select>
                         </div>
                         <div class="chart-container">
@@ -102,6 +99,10 @@
                     <div class="chart-container">
                         <canvas id="comparisonChart"></canvas>
                     </div>
+                    <!-- CHECKBOXES DE CATEGORÍAS DEBAJO DEL GRÁFICO -->
+                    <div class="category-legend">
+                        <div class="category-checkboxes" id="categoryCheckboxes"></div>
+                    </div>
                 </section>
 
                 <section class="section">
@@ -115,12 +116,6 @@
                             </thead>
                             <tbody id="tableBody"></tbody>
                         </table>
-                    </div>
-
-                    <!-- FILTRO DE CATEGORÍAS -->
-                    <div class="category-filter">
-                        <h3>📂 Filtrar por Categorías</h3>
-                        <div class="category-checkboxes" id="categoryCheckboxes"></div>
                     </div>
                 </section>
             </main>

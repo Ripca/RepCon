@@ -112,21 +112,31 @@ function updateYearFilter() {
 }
 
 /**
- * Actualiza checkboxes de categorías
+ * Actualiza checkboxes de categorías con colores dinámicos
  */
 function updateCategoryCheckboxes() {
     const container = document.getElementById('categoryCheckboxes');
     container.innerHTML = '';
 
+    const colors = [
+        '#667eea', '#764ba2', '#f093fb', '#4facfe',
+        '#43e97b', '#fa709a', '#fee140', '#30b0fe',
+        '#a8edea', '#fed6e3'
+    ];
+
     dataProcessor.categories.forEach((cat, idx) => {
         const div = document.createElement('div');
         div.className = 'category-checkbox';
+
+        const color = colors[idx % colors.length];
+        div.style.borderColor = color;
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.id = `cat-${idx}`;
         checkbox.value = cat;
         checkbox.checked = idx === 0;
+        checkbox.style.accentColor = color;
         checkbox.onchange = function() {
             if (this.checked) {
                 selectedCategories.add(cat);
@@ -139,6 +149,7 @@ function updateCategoryCheckboxes() {
         const label = document.createElement('label');
         label.htmlFor = `cat-${idx}`;
         label.textContent = cat;
+        label.style.color = color;
 
         div.appendChild(checkbox);
         div.appendChild(label);
@@ -183,35 +194,44 @@ function selectCategory(category) {
  * Actualiza gráfico de serie temporal
  */
 function updateTimeseriesChart() {
-    const category = document.getElementById('categorySelect').value || currentCategory;
-    if (!category) return;
-    
-    const data = dataProcessor.getWeeklyData(category);
-    if (!data) return;
-    
+    const selectedValue = document.getElementById('categorySelect').value;
+    const allData = dataProcessor.getAllWeeklyData();
+
+    if (!allData.dates || allData.dates.length === 0) return;
+
     const ctx = document.getElementById('timeseriesChart').getContext('2d');
-    
+
     if (charts.timeseries) {
         charts.timeseries.destroy();
     }
-    
+
+    const colors = [
+        '#667eea', '#764ba2', '#f093fb', '#4facfe',
+        '#43e97b', '#fa709a', '#fee140', '#30b0fe',
+        '#a8edea', '#fed6e3'
+    ];
+
+    // Si no hay selección, mostrar todas las categorías
+    const categoriesToShow = selectedValue ? [selectedValue] : dataProcessor.categories;
+
+    const datasets = categoriesToShow.map((cat, idx) => {
+        const catIdx = dataProcessor.categories.indexOf(cat);
+        return {
+            label: cat,
+            data: allData[cat],
+            borderColor: colors[catIdx % colors.length],
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            tension: 0.4,
+            pointRadius: 3
+        };
+    });
+
     charts.timeseries = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: data.dates,
-            datasets: [{
-                label: category,
-                data: data.values,
-                borderColor: '#667eea',
-                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 4,
-                pointBackgroundColor: '#667eea',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2
-            }]
+            labels: allData.dates,
+            datasets: datasets
         },
         options: {
             responsive: true,
@@ -219,7 +239,7 @@ function updateTimeseriesChart() {
             plugins: {
                 legend: {
                     display: true,
-                    labels: { font: { size: 12 } }
+                    labels: { font: { size: 11 } }
                 }
             },
             scales: {

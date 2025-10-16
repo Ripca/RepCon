@@ -34,23 +34,123 @@ body {
     min-height: 100vh;
 }
 
-header {
+/* HEADER FIJO */
+.fixed-header {
     background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     color: white;
-    padding: 20px 30px;
-    text-align: center;
+    padding: 0;
     flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-header h1 {
-    font-size: 1.8em;
-    margin-bottom: 5px;
+.header-content {
+    padding: 12px 30px;
+    text-align: center;
+}
+
+.header-content h1 {
+    font-size: 1.3em;
+    margin: 0;
     font-weight: 700;
 }
 
-header p {
-    font-size: 0.95em;
-    opacity: 0.95;
+/* BARRA DE ESTADÍSTICAS */
+.stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 15px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-item:last-child {
+    border-right: none;
+}
+
+.stat-label {
+    font-size: 0.75em;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 1.2em;
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+/* CONTROLES COMPACTOS */
+.compact-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    flex-wrap: wrap;
+}
+
+.control-separator {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.compact-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.compact-label input,
+.compact-label select {
+    padding: 4px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--dark);
+    font-size: 0.85em;
+    min-width: 60px;
+}
+
+.btn-compact {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 600;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.btn-compact:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-compact.btn-primary {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.btn-compact.btn-primary:hover {
+    background: rgba(255, 255, 255, 0.35);
 }
 
 .content {
@@ -123,53 +223,57 @@ header p {
     gap: 8px;
 }
 
+/* LEYENDA DE CATEGORÍAS CON CHECKBOXES */
+.category-legend {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+}
+
+.category-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+}
+
 .category-checkbox {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 10px;
+    padding: 8px 12px;
     background: white;
+    border: 2px solid var(--border);
     border-radius: 6px;
-    cursor: pointer;
     transition: all 0.3s;
-    border: 1px solid var(--border);
-    font-size: 0.9em;
+    cursor: pointer;
 }
 
 .category-checkbox:hover {
-    background: #e8eaf6;
-    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .category-checkbox input[type="checkbox"] {
     cursor: pointer;
     width: 18px;
     height: 18px;
+    margin: 0;
     accent-color: var(--primary);
+}
+
+.category-checkbox input[type="checkbox"]:checked {
+    accent-color: inherit;
 }
 
 .category-checkbox input[type="checkbox"]:checked + label {
     font-weight: 600;
-    color: var(--primary);
 }
 
 .category-checkbox label {
     cursor: pointer;
     margin: 0;
     flex: 1;
-}
-
-.category-filter {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid var(--border);
-}
-
-.category-filter h3 {
-    color: var(--primary);
-    margin: 0 0 12px 0;
-    font-size: 0.95em;
-    font-weight: 600;
+    font-size: 0.9em;
 }
 
 .main-content {
