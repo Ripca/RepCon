@@ -48,13 +48,10 @@
                                 <option value="">Todos los años</option>
                             </select>
                         </label>
-                        <button onclick="generateAllForecasts()" class="btn-primary">🔮 Generar Pronósticos</button>
-                        <button onclick="exportResults()" class="btn-primary">💾 Exportar Resultados</button>
-                    </div>
-
-                    <div class="control-group">
-                        <h3>📂 Categorías</h3>
-                        <div class="category-checkboxes" id="categoryCheckboxes"></div>
+                        <div class="button-group">
+                            <button onclick="generateAllForecasts()" class="btn-primary">🔮 Generar</button>
+                            <button onclick="exportResults()" class="btn-primary">💾 Exportar</button>
+                        </div>
                     </div>
                 </div>
 
@@ -118,6 +115,12 @@
                             </thead>
                             <tbody id="tableBody"></tbody>
                         </table>
+                    </div>
+
+                    <!-- FILTRO DE CATEGORÍAS -->
+                    <div class="category-filter">
+                        <h3>📂 Filtrar por Categorías</h3>
+                        <div class="category-checkboxes" id="categoryCheckboxes"></div>
                     </div>
                 </section>
             </main>

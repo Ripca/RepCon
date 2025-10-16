@@ -63,9 +63,9 @@ header p {
 
 .top-controls {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    padding: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+    padding: 15px 20px;
     background: var(--light);
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
@@ -74,14 +74,20 @@ header p {
 .control-group {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 .control-group h3 {
     color: var(--primary);
     margin: 0;
-    font-size: 0.95em;
+    font-size: 0.9em;
     font-weight: 600;
+}
+
+.button-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .file-input-wrapper {
@@ -153,6 +159,19 @@ header p {
     flex: 1;
 }
 
+.category-filter {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+}
+
+.category-filter h3 {
+    color: var(--primary);
+    margin: 0 0 12px 0;
+    font-size: 0.95em;
+    font-weight: 600;
+}
+
 .main-content {
     padding: 20px;
     overflow-y: auto;
@@ -219,10 +238,10 @@ header p {
 }
 
 select, input[type="number"] {
-    padding: 10px 12px;
+    padding: 8px 10px;
     border: 1px solid var(--border);
     border-radius: 6px;
-    font-size: 1em;
+    font-size: 0.9em;
     background: white;
     color: var(--dark);
     transition: border-color 0.3s;
@@ -235,10 +254,11 @@ select:focus, input[type="number"]:focus {
 }
 
 .btn-primary, .btn-secondary {
-    padding: 10px 20px;
+    padding: 8px 16px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
+    font-size: 0.9em;
     font-size: 1em;
     font-weight: 600;
     transition: all 0.3s;
