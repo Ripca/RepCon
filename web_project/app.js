@@ -235,13 +235,21 @@ function updateComparisonChart() {
 function generateAllForecasts() {
     const weeks = parseInt(document.getElementById('forecastWeeks').value) || 14;
     forecaster.forecastAll(weeks);
-    
+
     const firstForecast = Object.values(forecaster.forecasts)[0];
     if (!firstForecast) return;
-    
+
     const category = firstForecast.category;
     updateForecastChart(category);
-    showMessage(`Pronósticos generados para ${weeks} semanas`, 'success');
+
+    // Usar SweetAlert en lugar de mensaje en HTML
+    Swal.fire({
+        icon: 'success',
+        title: '¡Pronósticos Generados!',
+        text: `Se generaron pronósticos para ${weeks} semanas`,
+        timer: 2000,
+        showConfirmButton: false
+    });
 }
 
 /**
@@ -317,26 +325,39 @@ function updateForecastChart(category) {
 function updateDataTable() {
     const allData = dataProcessor.getAllWeeklyData();
     if (!allData.dates || allData.dates.length === 0) return;
-    
+
     const tbody = document.getElementById('tableBody');
+    const headerRow = document.getElementById('tableHeaderRow');
     tbody.innerHTML = '';
-    
-    allData.dates.slice(-20).reverse().forEach(date => {
+
+    // Actualizar encabezado de tabla con todas las categorías
+    headerRow.innerHTML = '<th>Fecha</th>';
+    dataProcessor.categories.forEach(cat => {
+        const th = document.createElement('th');
+        th.textContent = cat;
+        headerRow.appendChild(th);
+    });
+
+    // Mostrar últimas 15 filas en orden inverso
+    allData.dates.slice(-15).reverse().forEach(date => {
         const row = document.createElement('tr');
-        row.innerHTML = `<td>${date}</td>`;
-        
+
+        // Celda de fecha
+        const dateCell = document.createElement('td');
+        dateCell.textContent = date;
+        row.appendChild(dateCell);
+
+        // Celdas de categorías
         dataProcessor.categories.forEach(cat => {
             const idx = allData.dates.indexOf(date);
             const value = allData[cat][idx] || 0;
-            row.innerHTML += `<td>Q ${value.toLocaleString('es-GT', {maximumFractionDigits: 2})}</td>`;
+            const cell = document.createElement('td');
+            cell.textContent = 'Q ' + value.toLocaleString('es-GT', {maximumFractionDigits: 0});
+            row.appendChild(cell);
         });
-        
+
         tbody.appendChild(row);
     });
-    
-    // Actualizar encabezado de tabla
-    const header = document.getElementById('tableHeader');
-    header.textContent = dataProcessor.categories.join(' / ');
 }
 
 /**
@@ -353,15 +374,21 @@ function exportResults() {
 }
 
 /**
- * Muestra mensaje
+ * Muestra mensaje con SweetAlert
  */
 function showMessage(msg, type = 'info') {
-    const container = document.getElementById('errorContainer');
-    const div = document.createElement('div');
-    div.className = type === 'error' ? 'error' : 'success';
-    div.textContent = msg;
-    container.appendChild(div);
-    
-    setTimeout(() => div.remove(), 4000);
+    const iconMap = {
+        'error': 'error',
+        'success': 'success',
+        'info': 'info'
+    };
+
+    Swal.fire({
+        icon: iconMap[type] || 'info',
+        title: type === 'error' ? 'Error' : 'Éxito',
+        text: msg,
+        timer: 2500,
+        showConfirmButton: false
+    });
 }
 

@@ -7,13 +7,14 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <div class="container">
         <header>
             <div class="header-content">
-                <h1>📊 Forecasting de Categorías de Consumo</h1>
-                <p>Análisis y Pronóstico de Transacciones con Tarjetas de Crédito</p>
+                <h1>📊 Forecasting de Consumo</h1>
+                <p>Análisis y Pronóstico de Transacciones</p>
             </div>
         </header>
         
@@ -27,12 +28,7 @@
                     </div>
                     <button onclick="loadSampleData()" class="btn-secondary">Datos de Ejemplo</button>
                 </div>
-                
-                <div class="sidebar-section">
-                    <h3>📂 Categorías</h3>
-                    <ul class="category-list" id="categoryList"></ul>
-                </div>
-                
+
                 <div class="sidebar-section">
                     <h3>⚙️ Opciones</h3>
                     <label>
@@ -42,13 +38,17 @@
                     <button onclick="generateAllForecasts()" class="btn-primary">🔮 Generar Pronósticos</button>
                     <button onclick="exportResults()" class="btn-primary">💾 Exportar Resultados</button>
                 </div>
+
+                <div class="sidebar-section">
+                    <h3>📂 Categorías</h3>
+                    <ul class="category-list" id="categoryList"></ul>
+                </div>
             </aside>
             
             <main class="main-content">
                 <div id="errorContainer" class="error-container"></div>
-                
-                <section class="section">
-                    <h2>📈 Resumen de Datos</h2>
+
+                <section class="section stats-section">
                     <div class="stats-grid" id="statsGrid">
                         <div class="stat-card">
                             <h4>Transacciones</h4>
@@ -68,41 +68,42 @@
                         </div>
                     </div>
                 </section>
-                
-                <section class="section">
-                    <h2>📊 Serie Temporal</h2>
-                    <div class="controls">
-                        <select id="categorySelect" onchange="updateTimeseriesChart()">
-                            <option value="">Seleccionar categoría...</option>
-                        </select>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="timeseriesChart"></canvas>
-                    </div>
-                </section>
-                
+
+                <div class="charts-grid">
+                    <section class="section">
+                        <h2>📊 Serie Temporal</h2>
+                        <div class="controls">
+                            <select id="categorySelect" onchange="updateTimeseriesChart()">
+                                <option value="">Seleccionar categoría...</option>
+                            </select>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="timeseriesChart"></canvas>
+                        </div>
+                    </section>
+
+                    <section class="section">
+                        <h2>🔮 Pronóstico</h2>
+                        <div class="chart-container">
+                            <canvas id="forecastChart"></canvas>
+                        </div>
+                    </section>
+                </div>
+
                 <section class="section">
                     <h2>🔄 Comparación de Categorías</h2>
                     <div class="chart-container">
                         <canvas id="comparisonChart"></canvas>
                     </div>
                 </section>
-                
-                <section class="section">
-                    <h2>🔮 Pronóstico</h2>
-                    <div class="chart-container">
-                        <canvas id="forecastChart"></canvas>
-                    </div>
-                </section>
-                
+
                 <section class="section">
                     <h2>📋 Tabla de Datos</h2>
                     <div class="table-container">
                         <table id="dataTable">
                             <thead>
-                                <tr>
+                                <tr id="tableHeaderRow">
                                     <th>Fecha</th>
-                                    <th id="tableHeader"></th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody"></tbody>
