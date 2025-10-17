@@ -1,6 +1,7 @@
 """
 Forecasting de Categorías de Consumo - Aplicación Principal
-Centro de Excelencia de Capacidades Analíticas
+Procesa TODOS los datos reales (~11.5M registros) de CSV, JSON y XML
+Genera pronósticos con ARIMA y Regresión Lineal
 """
 
 import os
@@ -15,12 +16,16 @@ import plotly.express as px
 from data_processor import DataProcessor
 from forecaster import Forecaster
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates', static_folder='static')
 CORS(app)
+
+print("\n" + "="*60)
+print("🚀 INICIANDO APLICACIÓN DE PRONÓSTICO")
+print("="*60)
 
 # Inicializar procesador de datos
 processor = DataProcessor('../data')
-forecaster = Forecaster()
+forecaster = Forecaster('../data')
 
 @app.route('/')
 def index():

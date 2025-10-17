@@ -1,5 +1,6 @@
 """
-Módulo de Pronóstico - Genera predicciones de series temporales usando ARIMA
+Módulo de Pronóstico - Genera predicciones de series temporales usando ARIMA y Regresión Lineal
+Procesa TODOS los datos reales (~11.5M registros)
 """
 
 import numpy as np
@@ -15,12 +16,14 @@ from data_processor import DataProcessor
 warnings.filterwarnings('ignore')
 
 class Forecaster:
-    """Genera pronósticos para categorías de consumo usando ARIMA"""
+    """Genera pronósticos para categorías de consumo usando ARIMA y Regresión Lineal"""
 
     def __init__(self, data_path='../data'):
+        print("\n🤖 Inicializando Forecaster...")
         self.processor = DataProcessor(data_path)
         self.models = {}
         self.arima_params = {}  # Almacenar parámetros ARIMA óptimos
+        print("✓ Forecaster listo\n")
     
     def forecast(self, category, weeks=14):
         """Genera pronóstico para una categoría usando ARIMA"""

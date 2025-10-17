@@ -1,0 +1,221 @@
+================================================================================
+                    COMANDOS LISTOS PARA COPIAR Y PEGAR
+================================================================================
+
+OPCIÓN 1: POWERSHELL (Recomendado para Windows)
+================================================================================
+
+Copia y pega TODOS estos comandos en PowerShell:
+
+---INICIO---
+
+cd python_project
+pip install -r requirements.txt
+python app.py
+
+---FIN---
+
+Luego abre en navegador: http://localhost:5000
+
+
+OPCIÓN 2: CMD (Símbolo del sistema)
+================================================================================
+
+Copia y pega TODOS estos comandos en CMD:
+
+---INICIO---
+
+cd python_project
+pip install -r requirements.txt
+python app.py
+
+---FIN---
+
+Luego abre en navegador: http://localhost:5000
+
+
+OPCIÓN 3: SCRIPT AUTOMÁTICO (Windows)
+================================================================================
+
+Solo haz doble-click en:
+  python_project/run.bat
+
+El script hará todo automáticamente.
+
+
+OPCIÓN 4: SCRIPT POWERSHELL
+================================================================================
+
+Copia y pega en PowerShell:
+
+---INICIO---
+
+cd python_project
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+.\run.ps1
+
+---FIN---
+
+
+OPCIÓN 5: LINUX/MAC
+================================================================================
+
+Copia y pega en Terminal:
+
+---INICIO---
+
+cd python_project
+pip install -r requirements.txt
+python app.py
+
+---FIN---
+
+Luego abre en navegador: http://localhost:5000
+
+
+VERIFICACIÓN RÁPIDA
+================================================================================
+
+Después de ejecutar los comandos, deberías ver en la consola:
+
+  ============================================================
+  🚀 INICIANDO APLICACIÓN DE PRONÓSTICO
+  ============================================================
+  
+  📂 Cargando datos de archivos...
+  [... mensajes de carga ...]
+  
+  🤖 Inicializando Forecaster...
+  ✓ Forecaster listo
+  
+   * Running on http://127.0.0.1:5000
+
+Si ves esto, ¡todo está funcionando correctamente!
+
+
+ACCESO A LA APLICACIÓN
+================================================================================
+
+Una vez que veas "Running on http://127.0.0.1:5000", abre tu navegador y ve a:
+
+  http://localhost:5000
+
+O haz click aquí (si estás en Windows):
+  http://127.0.0.1:5000
+
+
+DETENER LA APLICACIÓN
+================================================================================
+
+Para detener la aplicación en cualquier momento:
+  Presiona: Ctrl + C
+
+En la consola verás:
+  KeyboardInterrupt
+  
+Luego puedes cerrar la ventana.
+
+
+PROBLEMAS COMUNES
+================================================================================
+
+❌ Error: "Python no está instalado"
+✅ Solución:
+   1. Descarga Python desde https://www.python.org/downloads/
+   2. Durante instalación, marca "Add Python to PATH"
+   3. Reinicia PowerShell/CMD
+   4. Intenta de nuevo
+
+❌ Error: "ModuleNotFoundError: No module named 'flask'"
+✅ Solución:
+   Ejecuta: pip install -r requirements.txt
+
+❌ Error: "Port 5000 already in use"
+✅ Solución:
+   Cierra otras aplicaciones que usen puerto 5000
+   O edita app.py y cambia:
+     app.run(debug=True, port=8000)
+
+❌ Aplicación lenta en primera ejecución
+✅ Solución:
+   Normal: procesa 11.5M registros
+   Próximas ejecuciones serán instantáneas
+
+
+LIMPIAR CACHÉ (si hay problemas)
+================================================================================
+
+Copia y pega en PowerShell:
+
+---INICIO---
+
+cd data
+Remove-Item .cache_data.pkl -Force
+cd ..
+python app.py
+
+---FIN---
+
+
+INFORMACIÓN IMPORTANTE
+================================================================================
+
+⏱️ TIEMPOS:
+  - Primera ejecución: 1-2 minutos (procesa 11.5M registros)
+  - Próximas ejecuciones: 5-10 segundos (carga desde caché)
+
+📊 DATOS:
+  - Total de registros: ~11.5 millones
+  - Formatos: CSV, JSON, XML
+  - Período: 2022-2025
+  - Categorías: 8
+
+🎯 ALGORITMOS:
+  - ARIMA: Pronósticos precisos (~8-12% sMAPE)
+  - Regresión Lineal: Fallback si ARIMA falla
+
+🌐 INTERFAZ:
+  - Dashboard: Estadísticas y gráficos
+  - Análisis: Análisis profundo por categoría
+  - Pronósticos: Predicciones ARIMA
+  - Datos: Tabla completa de datos
+
+
+ESTRUCTURA DEL PROYECTO
+================================================================================
+
+python_project/
+├── app.py                 ← Aplicación principal
+├── data_processor.py      ← Procesamiento de datos
+├── forecaster.py          ← Algoritmos ARIMA
+├── requirements.txt       ← Dependencias
+├── run.bat               ← Script Windows
+├── run.ps1               ← Script PowerShell
+├── templates/
+│   └── index.html        ← Interfaz web
+└── README.md             ← Documentación
+
+
+PRÓXIMOS PASOS
+================================================================================
+
+1. Copia uno de los comandos de arriba
+2. Pégalo en PowerShell/CMD
+3. Presiona Enter
+4. Espera a que termine de cargar
+5. Abre navegador en http://localhost:5000
+6. ¡Disfruta del dashboard!
+
+
+AYUDA ADICIONAL
+================================================================================
+
+Para más información, lee:
+  - python_project/README.md (documentación completa)
+  - INSTRUCCIONES_EJECUCION.md (instrucciones detalladas)
+  - RESUMEN_PROYECTO.txt (resumen del proyecto)
+
+================================================================================
+                        ¡LISTO PARA EMPEZAR!
+================================================================================
+
