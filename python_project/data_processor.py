@@ -18,13 +18,38 @@ class DataProcessor:
     """Procesa datos de múltiples formatos (CSV, JSON, XML)"""
 
     @staticmethod
-    def _remove_accents(text):
-        """Remueve tildes y acentos de un texto"""
+    def _normalize_category(text):
+        """Normaliza categorías: remueve tildes, acentos, espacios extras y caracteres especiales"""
         if pd.isna(text):
             return text
-        text = str(text)
+
+        # Convertir a string y mayúsculas
+        text = str(text).strip().upper()
+
+        # Mapeo manual de caracteres con tilde a sin tilde
+        replacements = {
+            'Á': 'A', 'á': 'A',
+            'É': 'E', 'é': 'E',
+            'Í': 'I', 'í': 'I',
+            'Ó': 'O', 'ó': 'O',
+            'Ú': 'U', 'ú': 'U',
+            'Ñ': 'N', 'ñ': 'N',
+        }
+
+        for char_with_tilde, char_without in replacements.items():
+            text = text.replace(char_with_tilde, char_without)
+
+        # Remover tildes y acentos usando NFKD (por si hay otros caracteres)
         nfkd_form = unicodedata.normalize('NFKD', text)
-        return ''.join([c for c in nfkd_form if not unicodedata.combining(c)])
+        text = ''.join([c for c in nfkd_form if not unicodedata.combining(c)])
+
+        # Remover caracteres especiales (mantener solo letras, números y espacios)
+        text = ''.join(c if c.isalnum() or c.isspace() else '' for c in text)
+
+        # Remover espacios múltiples y espacios al inicio/final
+        text = ' '.join(text.split())
+
+        return text
 
     def __init__(self, data_path):
         self.data_path = data_path
@@ -121,11 +146,9 @@ class DataProcessor:
             self.df['monto'] = self.df['monto'].astype(str).str.replace(',', '.')
             self.df['monto'] = pd.to_numeric(self.df['monto'], errors='coerce')
 
-        # Normalizar categorías: remover tildes, espacios múltiples y convertir a mayúsculas
+        # Normalizar categorías: remover tildes, acentos, espacios y caracteres especiales
         if 'categoria' in self.df.columns:
-            self.df['categoria'] = self.df['categoria'].apply(
-                lambda x: ' '.join(self._remove_accents(x).strip().upper().split())
-            )
+            self.df['categoria'] = self.df['categoria'].apply(self._normalize_category)
 
         # Eliminar filas con valores nulos
         initial_count = len(self.df)
@@ -136,7 +159,10 @@ class DataProcessor:
         # Obtener categorías únicas
         self.categories = sorted(self.df['categoria'].unique().tolist())
         print(f"  ✓ Categorías encontradas: {len(self.categories)}")
-        print(f"  ✓ Categorías: {', '.join(self.categories)}")
+        print(f"  ✓ Categorías normalizadas:")
+        for i, cat in enumerate(self.categories, 1):
+            count = len(self.df[self.df['categoria'] == cat])
+            print(f"     {i}. {cat} ({count:,} registros)")
 
     def _aggregate_weekly(self):
         """Agrega datos a nivel semanal"""
