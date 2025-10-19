@@ -12,9 +12,19 @@ from datetime import datetime
 from pathlib import Path
 import pickle
 import time
+import unicodedata
 
 class DataProcessor:
     """Procesa datos de múltiples formatos (CSV, JSON, XML)"""
+
+    @staticmethod
+    def _remove_accents(text):
+        """Remueve tildes y acentos de un texto"""
+        if pd.isna(text):
+            return text
+        text = str(text)
+        nfkd_form = unicodedata.normalize('NFKD', text)
+        return ''.join([c for c in nfkd_form if not unicodedata.combining(c)])
 
     def __init__(self, data_path):
         self.data_path = data_path
@@ -111,9 +121,9 @@ class DataProcessor:
             self.df['monto'] = self.df['monto'].astype(str).str.replace(',', '.')
             self.df['monto'] = pd.to_numeric(self.df['monto'], errors='coerce')
 
-        # Normalizar categorías
+        # Normalizar categorías: remover tildes, espacios y convertir a mayúsculas
         if 'categoria' in self.df.columns:
-            self.df['categoria'] = self.df['categoria'].str.strip().str.upper()
+            self.df['categoria'] = self.df['categoria'].apply(lambda x: self._remove_accents(x).strip().upper())
 
         # Eliminar filas con valores nulos
         initial_count = len(self.df)
@@ -124,6 +134,7 @@ class DataProcessor:
         # Obtener categorías únicas
         self.categories = sorted(self.df['categoria'].unique().tolist())
         print(f"  ✓ Categorías encontradas: {len(self.categories)}")
+        print(f"  ✓ Categorías: {', '.join(self.categories)}")
 
     def _aggregate_weekly(self):
         """Agrega datos a nivel semanal"""
