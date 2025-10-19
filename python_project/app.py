@@ -45,8 +45,22 @@ def get_data_summary():
 def get_categories():
     """Obtener categorías disponibles"""
     try:
-        categories = processor.get_categories()
-        return jsonify({'categories': categories})
+        categories_data = processor.get_categories()
+        # Si ya es un diccionario con 'categories', devolverlo directamente
+        if isinstance(categories_data, dict) and 'categories' in categories_data:
+            return jsonify(categories_data)
+        # Si es una lista, envolverla
+        return jsonify({'categories': categories_data})
+    except Exception as e:
+        print(f"Error en get_categories: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/debug/categories')
+def debug_categories():
+    """Debug: Ver categorías reales"""
+    try:
+        cats = processor.categories
+        return jsonify({'categories': cats, 'count': len(cats) if cats else 0})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

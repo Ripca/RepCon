@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Pronóstico - Datos Reales</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,6 +41,12 @@
         .page { display: none; }
         .page.active { display: block; }
         .info-box { background: #e3f2fd; border-left: 4px solid #0066cc; padding: 15px; border-radius: 5px; margin-bottom: 20px; color: #1e3a5f; }
+        table { width: 100%; border-collapse: collapse; }
+        table thead { background: #1e3a5f; color: white; }
+        table th { padding: 12px; text-align: left; font-weight: bold; }
+        table td { padding: 10px; border-bottom: 1px solid #ddd; }
+        table tbody tr:hover { background: #f5f5f5; }
+        .dataTables_wrapper { margin-top: 20px; }
         @media (max-width: 768px) { .container { flex-direction: column; } .sidebar { width: 100%; display: flex; gap: 10px; overflow-x: auto; } .nav-item { white-space: nowrap; } .stats-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -95,15 +104,15 @@
         function loadDashboard() {
             fetch('/api/data/summary').then(r => r.json()).then(data => {
                 document.getElementById('statsContainer').innerHTML = `
-                    <div class="stat-card"><div class="icon"><i class="fas fa-exchange-alt"></i></div><h3>Transacciones</h3><div class="value">${data.total_transactions || 0}</div></div>
-                    <div class="stat-card"><div class="icon"><i class="fas fa-money-bill"></i></div><h3>Monto Total</h3><div class="value">Q ${(data.total_amount || 0).toLocaleString()}</div></div>
+                    <div class="stat-card"><div class="icon"><i class="fas fa-exchange-alt"></i></div><h3>Transacciones</h3><div class="value">${(data.total_transactions || 0).toLocaleString()}</div></div>
+                    <div class="stat-card"><div class="icon"><i class="fas fa-money-bill"></i></div><h3>Monto Total</h3><div class="value">Q ${(data.total_amount || 0).toLocaleString('es-GT', {maximumFractionDigits: 2})}</div></div>
                     <div class="stat-card"><div class="icon"><i class="fas fa-tags"></i></div><h3>Categorías</h3><div class="value">${data.num_categories || 0}</div></div>
                 `;
             });
             fetch('/api/data/all-weekly').then(r => r.json()).then(data => {
                 const ctx = document.getElementById('trendChart').getContext('2d');
                 if (charts.trend) charts.trend.destroy();
-                const colors = ['#0066cc', '#ff6b6b', '#51cf66', '#ffd43b', '#a78bfa', '#f472b6', '#06b6d4', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316', '#6366f1'];
+                const colors = ['#0066cc', '#ff6b6b', '#51cf66', '#ffd43b', '#a78bfa', '#f472b6', '#06b6d4', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316', '#6366f1', '#ec4899', '#f59e0b'];
                 charts.trend = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -113,10 +122,30 @@
                             data: data[cat],
                             borderColor: colors[i % colors.length],
                             tension: 0.4,
-                            fill: false
+                            fill: false,
+                            borderWidth: 2
                         }))
                     },
                     options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' } } }
+                });
+            });
+            // Gráfico de distribución por categoría
+            fetch('/api/data/all-weekly').then(r => r.json()).then(data => {
+                const ctx = document.getElementById('categoryChart').getContext('2d');
+                if (charts.category) charts.category.destroy();
+                const categories = Object.keys(data).filter(k => k !== 'dates');
+                const totals = categories.map(cat => data[cat].reduce((a, b) => a + b, 0));
+                const colors = ['#0066cc', '#ff6b6b', '#51cf66', '#ffd43b', '#a78bfa', '#f472b6', '#06b6d4', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316', '#6366f1', '#ec4899', '#f59e0b'];
+                charts.category = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: categories,
+                        datasets: [{
+                            data: totals,
+                            backgroundColor: colors.slice(0, categories.length)
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'right' } } }
                 });
             });
         }
@@ -178,16 +207,32 @@
         }
         function loadData() {
             fetch('/api/data/all-weekly').then(r => r.json()).then(data => {
-                let html = '<table style="width:100%; border-collapse: collapse;"><tr style="background:#1e3a5f; color:white;"><th style="padding:10px; text-align:left;">Fecha</th>';
-                Object.keys(data).filter(k => k !== 'dates').forEach(cat => { html += `<th style="padding:10px; text-align:left;">${cat}</th>`; });
-                html += '</tr>';
+                const categories = Object.keys(data).filter(k => k !== 'dates');
+                let html = '<table id="dataTableElement" class="display" style="width:100%;"><thead><tr><th>Fecha</th>';
+                categories.forEach(cat => { html += `<th>${cat}</th>`; });
+                html += '</tr></thead><tbody>';
                 data.dates.forEach((date, i) => {
-                    html += `<tr style="border-bottom:1px solid #ddd;"><td style="padding:10px;">${date}</td>`;
-                    Object.keys(data).filter(k => k !== 'dates').forEach(cat => { html += `<td style="padding:10px;">Q ${(data[cat][i] || 0).toLocaleString()}</td>`; });
+                    html += `<tr><td>${date}</td>`;
+                    categories.forEach(cat => { html += `<td>Q ${(data[cat][i] || 0).toLocaleString('es-GT', {maximumFractionDigits: 2})}</td>`; });
                     html += '</tr>';
                 });
-                html += '</table>';
+                html += '</tbody></table>';
                 document.getElementById('dataTable').innerHTML = html;
+                // Inicializar DataTable
+                if ($.fn.dataTable.isDataTable('#dataTableElement')) {
+                    $('#dataTableElement').DataTable().destroy();
+                }
+                $('#dataTableElement').DataTable({
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    pageLength: 25,
+                    scrollX: true,
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                    }
+                });
             });
         }
         window.addEventListener('load', loadDashboard);
