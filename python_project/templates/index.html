@@ -94,15 +94,16 @@
         }
         function loadDashboard() {
             fetch('/api/data/summary').then(r => r.json()).then(data => {
-                document.getElementById('statsContainer').innerHTML = 
-                    <div class="stat-card"><div class="icon"><i class="fas fa-exchange-alt"></i></div><h3>Transacciones</h3><div class="value">M</div></div>
-                    <div class="stat-card"><div class="icon"><i class="fas fa-money-bill"></i></div><h3>Monto Total</h3><div class="value">Q M</div></div>
-                    <div class="stat-card"><div class="icon"><i class="fas fa-tags"></i></div><h3>Categorías</h3><div class="value"></div></div>
-                ;
+                document.getElementById('statsContainer').innerHTML = `
+                    <div class="stat-card"><div class="icon"><i class="fas fa-exchange-alt"></i></div><h3>Transacciones</h3><div class="value">${data.total_transactions || 0}</div></div>
+                    <div class="stat-card"><div class="icon"><i class="fas fa-money-bill"></i></div><h3>Monto Total</h3><div class="value">Q ${(data.total_amount || 0).toLocaleString()}</div></div>
+                    <div class="stat-card"><div class="icon"><i class="fas fa-tags"></i></div><h3>Categorías</h3><div class="value">${data.num_categories || 0}</div></div>
+                `;
             });
             fetch('/api/data/all-weekly').then(r => r.json()).then(data => {
                 const ctx = document.getElementById('trendChart').getContext('2d');
                 if (charts.trend) charts.trend.destroy();
+                const colors = ['#0066cc', '#ff6b6b', '#51cf66', '#ffd43b', '#a78bfa', '#f472b6', '#06b6d4', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316', '#6366f1'];
                 charts.trend = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -110,7 +111,7 @@
                         datasets: Object.keys(data).filter(k => k !== 'dates').map((cat, i) => ({
                             label: cat,
                             data: data[cat],
-                            borderColor: hsl(, 70%, 50%),
+                            borderColor: colors[i % colors.length],
                             tension: 0.4,
                             fill: false
                         }))
@@ -122,13 +123,13 @@
         function loadAnalysis() {
             fetch('/api/data/categories').then(r => r.json()).then(data => {
                 const select = document.getElementById('categorySelect');
-                select.innerHTML = '<option>Seleccionar...</option>' + data.categories.map(c => <option value=""></option>).join('');
+                select.innerHTML = '<option>Seleccionar...</option>' + data.categories.map(c => `<option value="${c}">${c}</option>`).join('');
             });
         }
         function updateAnalysis() {
             const cat = document.getElementById('categorySelect').value;
             if (!cat || cat === 'Seleccionar...') return;
-            fetch(/api/data/weekly/).then(r => r.json()).then(data => {
+            fetch(`/api/data/weekly/${cat}`).then(r => r.json()).then(data => {
                 const ctx = document.getElementById('timeseriesChart').getContext('2d');
                 if (charts.timeseries) charts.timeseries.destroy();
                 charts.timeseries = new Chart(ctx, {
@@ -137,21 +138,21 @@
                     options: { responsive: true, maintainAspectRatio: true }
                 });
                 const stats = data.statistics;
-                document.getElementById('statsDetail').innerHTML = 
+                document.getElementById('statsDetail').innerHTML = `
                     <table style="width:100%; border-collapse: collapse;">
-                        <tr><td style="padding:10px; border-bottom:1px solid #ddd;"><strong>Media:</strong></td><td>Q </td></tr>
-                        <tr><td style="padding:10px; border-bottom:1px solid #ddd;"><strong>Desv. Est.:</strong></td><td>Q </td></tr>
-                        <tr><td style="padding:10px; border-bottom:1px solid #ddd;"><strong>Mínimo:</strong></td><td>Q </td></tr>
-                        <tr><td style="padding:10px; border-bottom:1px solid #ddd;"><strong>Máximo:</strong></td><td>Q </td></tr>
-                        <tr><td style="padding:10px;"><strong>Total:</strong></td><td>Q </td></tr>
+                        <tr><td style="padding:10px; border-bottom:1px solid #ddd;"><strong>Media:</strong></td><td>Q ${(stats.mean || 0).toLocaleString()}</td></tr>
+                        <tr><td style="padding:10px; border-bottom:1px solid #ddd;"><strong>Desv. Est.:</strong></td><td>Q ${(stats.std || 0).toLocaleString()}</td></tr>
+                        <tr><td style="padding:10px; border-bottom:1px solid #ddd;"><strong>Mínimo:</strong></td><td>Q ${(stats.min || 0).toLocaleString()}</td></tr>
+                        <tr><td style="padding:10px; border-bottom:1px solid #ddd;"><strong>Máximo:</strong></td><td>Q ${(stats.max || 0).toLocaleString()}</td></tr>
+                        <tr><td style="padding:10px;"><strong>Total:</strong></td><td>Q ${(stats.total || 0).toLocaleString()}</td></tr>
                     </table>
-                ;
+                `;
             });
         }
         function loadForecast() {
             fetch('/api/data/categories').then(r => r.json()).then(data => {
                 const select = document.getElementById('forecastCategory');
-                select.innerHTML = '<option>Seleccionar...</option>' + data.categories.map(c => <option value=""></option>).join('');
+                select.innerHTML = '<option>Seleccionar...</option>' + data.categories.map(c => `<option value="${c}">${c}</option>`).join('');
             });
         }
         function updateForecast() {
@@ -178,11 +179,11 @@
         function loadData() {
             fetch('/api/data/all-weekly').then(r => r.json()).then(data => {
                 let html = '<table style="width:100%; border-collapse: collapse;"><tr style="background:#1e3a5f; color:white;"><th style="padding:10px; text-align:left;">Fecha</th>';
-                Object.keys(data).filter(k => k !== 'dates').forEach(cat => { html += <th style="padding:10px; text-align:left;"></th>; });
+                Object.keys(data).filter(k => k !== 'dates').forEach(cat => { html += `<th style="padding:10px; text-align:left;">${cat}</th>`; });
                 html += '</tr>';
                 data.dates.forEach((date, i) => {
-                    html += <tr style="border-bottom:1px solid #ddd;"><td style="padding:10px;"></td>;
-                    Object.keys(data).filter(k => k !== 'dates').forEach(cat => { html += <td style="padding:10px;">Q </td>; });
+                    html += `<tr style="border-bottom:1px solid #ddd;"><td style="padding:10px;">${date}</td>`;
+                    Object.keys(data).filter(k => k !== 'dates').forEach(cat => { html += `<td style="padding:10px;">Q ${(data[cat][i] || 0).toLocaleString()}</td>`; });
                     html += '</tr>';
                 });
                 html += '</table>';

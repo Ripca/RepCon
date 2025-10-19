@@ -61,12 +61,13 @@ class Forecaster:
     
     def forecast_all(self, weeks=14):
         """Genera pronósticos para todas las categorías"""
-        categories = self.processor.get_categories()
+        categories_data = self.processor.get_categories()
+        categories = categories_data['categories'] if isinstance(categories_data, dict) else categories_data
         forecasts = {}
-        
+
         for category in categories:
             forecasts[category] = self.forecast(category, weeks)
-        
+
         return forecasts
     
     def _forecast_arima(self, values, weeks, category):

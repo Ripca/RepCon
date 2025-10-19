@@ -168,21 +168,21 @@ class DataProcessor:
         """Obtiene resumen de los datos"""
         if self.df is None:
             return {'error': 'No data loaded'}
-        
+
         return {
             'total_transactions': len(self.df),
             'total_amount': float(self.df['monto'].sum()),
+            'num_categories': len(self.categories),
             'date_range': {
                 'start': self.df['fecha'].min().isoformat(),
                 'end': self.df['fecha'].max().isoformat()
             },
-            'categories_count': len(self.categories),
             'categories': self.categories
         }
     
     def get_categories(self):
         """Obtiene lista de categorías"""
-        return self.categories or []
+        return {'categories': self.categories or []}
     
     def get_weekly_data(self, category):
         """Obtiene datos semanales de una categoría"""
