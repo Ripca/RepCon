@@ -35,6 +35,10 @@
         .controls select, .controls input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
         .btn { padding: 10px 20px; background: #0066cc; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
         .btn:hover { background: #0052a3; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,102,204,0.3); }
+        .btn-download { background: #51cf66; margin-left: 10px; }
+        .btn-download:hover { background: #40c057; }
+        .btn-disabled { background: #ccc; cursor: not-allowed; }
+        .btn-disabled:hover { background: #ccc; transform: none; }
         .loading { text-align: center; padding: 40px; color: #666; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #0066cc; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -75,14 +79,14 @@
 
             <div id="analysis" class="page">
                 <div class="header"><h1><i class="fas fa-chart-bar"></i> Análisis</h1><p>Análisis profundo de categorías</p></div>
-                <div class="controls"><label>Categoría:</label><select id="categorySelect" onchange="updateAnalysis()"><option>Seleccionar...</option></select></div>
+                <div class="controls"><label>Categoría:</label><select id="categorySelect" onchange="updateAnalysis()"><option>Seleccionar...</option></select><button class="btn btn-download btn-disabled" id="downloadAnalysisBtn" onclick="downloadAnalysis()" disabled><i class="fas fa-download"></i> Descargar CSV</button></div>
                 <div class="chart-container"><h2>Serie Temporal</h2><canvas id="timeseriesChart"></canvas></div>
                 <div class="chart-container"><h2>Estadísticas</h2><div id="statsDetail"></div></div>
             </div>
 
             <div id="forecast" class="page">
                 <div class="header"><h1><i class="fas fa-crystal-ball"></i> Pronósticos</h1><p>Predicciones ARIMA</p></div>
-                <div class="controls"><label>Categoría:</label><select id="forecastCategory" onchange="updateForecast()"><option>Seleccionar...</option></select><label>Semanas:</label><input type="number" id="forecastWeeks" value="14" min="1" max="52" disabled><button class="btn" onclick="updateForecast()"><i class="fas fa-sync"></i> Actualizar</button></div>
+                <div class="controls"><label>Categoría:</label><select id="forecastCategory" onchange="updateForecast()"><option>Seleccionar...</option></select><label>Semanas:</label><input type="number" id="forecastWeeks" value="14" min="1" max="52" disabled><button class="btn" onclick="updateForecast()"><i class="fas fa-sync"></i> Actualizar</button><button class="btn btn-download btn-disabled" id="downloadForecastBtn" onclick="downloadForecast()" disabled><i class="fas fa-download"></i> Descargar CSV</button></div>
                 <div id="forecastStatus"></div>
                 <div class="chart-container"><h2>Pronóstico ARIMA</h2><canvas id="forecastChart"></canvas></div>
             </div>
@@ -90,6 +94,7 @@
             <div id="data" class="page">
                 <div class="header"><h1><i class="fas fa-table"></i> Datos</h1><p>Tabla de datos procesados</p></div>
                 <div class="info-box"><i class="fas fa-info-circle"></i> Datos agregados por semana de TODOS los archivos (CSV, JSON, XML)</div>
+                <div class="controls"><button class="btn btn-download" onclick="downloadData()"><i class="fas fa-download"></i> Descargar CSV</button></div>
                 <div class="chart-container"><div id="dataTable" style="overflow-x: auto;"></div></div>
             </div>
         </div>
@@ -165,6 +170,8 @@
             const cat = document.getElementById('categorySelect').value;
             if (!cat || cat === 'Seleccionar...') return;
             document.getElementById('statsDetail').innerHTML = '<div class="status-message"><span class="status-spinner"></span> Analizando datos...</div>';
+            document.getElementById('downloadAnalysisBtn').disabled = true;
+            document.getElementById('downloadAnalysisBtn').classList.add('btn-disabled');
             fetch(`/api/data/weekly/${cat}`).then(r => r.json()).then(data => {
                 const ctx = document.getElementById('timeseriesChart').getContext('2d');
                 if (charts.timeseries) charts.timeseries.destroy();
@@ -183,6 +190,8 @@
                         <tr><td style="padding:10px;"><strong>Total:</strong></td><td>Q ${(stats.total || 0).toLocaleString()}</td></tr>
                     </table>
                 `;
+                document.getElementById('downloadAnalysisBtn').disabled = false;
+                document.getElementById('downloadAnalysisBtn').classList.remove('btn-disabled');
             });
         }
         function loadForecast() {
@@ -196,9 +205,13 @@
             const weeks = document.getElementById('forecastWeeks').value;
             if (!cat || cat === 'Seleccionar...') return;
             document.getElementById('forecastStatus').innerHTML = '<div class="status-message"><span class="status-spinner"></span> Generando pronóstico ARIMA...</div><div class="progress-bar"><div class="progress-fill"></div></div>';
+            document.getElementById('downloadForecastBtn').disabled = true;
+            document.getElementById('downloadForecastBtn').classList.add('btn-disabled');
             fetch('/api/forecast', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ category: cat, weeks: parseInt(weeks) }) })
             .then(r => r.json()).then(data => {
                 document.getElementById('forecastStatus').innerHTML = '<div class="status-message" style="color: #51cf66;"><i class="fas fa-check-circle"></i> Pronóstico completado</div>';
+                document.getElementById('downloadForecastBtn').disabled = false;
+                document.getElementById('downloadForecastBtn').classList.remove('btn-disabled');
                 const ctx = document.getElementById('forecastChart').getContext('2d');
                 if (charts.forecast) charts.forecast.destroy();
                 charts.forecast = new Chart(ctx, {
@@ -215,6 +228,8 @@
                 setTimeout(() => { document.getElementById('forecastStatus').innerHTML = ''; }, 3000);
             }).catch(err => {
                 document.getElementById('forecastStatus').innerHTML = '<div class="status-message" style="color: #ff6b6b;"><i class="fas fa-exclamation-circle"></i> Error al generar pronóstico</div>';
+                document.getElementById('downloadForecastBtn').disabled = true;
+                document.getElementById('downloadForecastBtn').classList.add('btn-disabled');
             });
         }
         function loadData() {
@@ -246,6 +261,19 @@
                     }
                 });
             });
+        }
+        function downloadForecast() {
+            const cat = document.getElementById('forecastCategory').value;
+            if (!cat || cat === 'Seleccionar...') return;
+            window.location.href = `/api/download/forecast/${cat}`;
+        }
+        function downloadAnalysis() {
+            const cat = document.getElementById('categorySelect').value;
+            if (!cat || cat === 'Seleccionar...') return;
+            window.location.href = `/api/download/analysis/${cat}`;
+        }
+        function downloadData() {
+            window.location.href = '/api/download/data';
         }
         window.addEventListener('load', loadDashboard);
     </script>

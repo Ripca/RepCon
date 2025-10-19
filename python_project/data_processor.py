@@ -121,9 +121,11 @@ class DataProcessor:
             self.df['monto'] = self.df['monto'].astype(str).str.replace(',', '.')
             self.df['monto'] = pd.to_numeric(self.df['monto'], errors='coerce')
 
-        # Normalizar categorías: remover tildes, espacios y convertir a mayúsculas
+        # Normalizar categorías: remover tildes, espacios múltiples y convertir a mayúsculas
         if 'categoria' in self.df.columns:
-            self.df['categoria'] = self.df['categoria'].apply(lambda x: self._remove_accents(x).strip().upper())
+            self.df['categoria'] = self.df['categoria'].apply(
+                lambda x: ' '.join(self._remove_accents(x).strip().upper().split())
+            )
 
         # Eliminar filas con valores nulos
         initial_count = len(self.df)

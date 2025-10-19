@@ -9,12 +9,13 @@ import json
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_file
 from flask_cors import CORS
 import plotly.graph_objects as go
 import plotly.express as px
 from data_processor import DataProcessor
 from forecaster import Forecaster
+from io import BytesIO
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 CORS(app)
@@ -171,6 +172,87 @@ def get_comparison_chart():
         )
         
         return jsonify(json.loads(fig.to_json()))
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/download/forecast/<category>')
+def download_forecast(category):
+    """Descargar pronóstico como CSV"""
+    try:
+        forecast_data = forecaster.forecast(category, weeks=14)
+
+        # Crear DataFrame con los datos
+        df = pd.DataFrame({
+            'Fecha': forecast_data['forecast_dates'],
+            'Pronóstico': forecast_data['forecast_values'],
+            'Límite Inferior': forecast_data.get('lower_bound', [None]*len(forecast_data['forecast_dates'])),
+            'Límite Superior': forecast_data.get('upper_bound', [None]*len(forecast_data['forecast_dates']))
+        })
+
+        # Convertir a CSV
+        csv_buffer = BytesIO()
+        df.to_csv(csv_buffer, index=False, encoding='utf-8-sig')
+        csv_buffer.seek(0)
+
+        return send_file(
+            csv_buffer,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=f'pronostico_{category}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/download/analysis/<category>')
+def download_analysis(category):
+    """Descargar análisis como CSV"""
+    try:
+        weekly_data = processor.get_weekly_data(category)
+
+        df = pd.DataFrame({
+            'Fecha': weekly_data['dates'],
+            'Monto': weekly_data['values']
+        })
+
+        csv_buffer = BytesIO()
+        df.to_csv(csv_buffer, index=False, encoding='utf-8-sig')
+        csv_buffer.seek(0)
+
+        return send_file(
+            csv_buffer,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=f'analisis_{category}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/download/data')
+def download_data():
+    """Descargar todos los datos como CSV"""
+    try:
+        all_weekly = processor.get_all_weekly_data()
+
+        # Convertir a formato de tabla
+        dates = all_weekly['dates']
+        categories = [k for k in all_weekly.keys() if k != 'dates']
+
+        data = {'Fecha': dates}
+        for cat in categories:
+            data[cat] = all_weekly[cat]
+
+        df = pd.DataFrame(data)
+
+        csv_buffer = BytesIO()
+        df.to_csv(csv_buffer, index=False, encoding='utf-8-sig')
+        csv_buffer.seek(0)
+
+        return send_file(
+            csv_buffer,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=f'datos_completos_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        )
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
